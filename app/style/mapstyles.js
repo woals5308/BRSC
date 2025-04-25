@@ -122,6 +122,26 @@ const styles = StyleSheet.create({
       padding: 10,
       borderRadius: 20,
     },
+    searchBar: {
+      position: 'absolute',
+      top: 60,
+      left: 20,
+      right: 20,
+      backgroundColor: 'white',
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 5,
+      zIndex: 100,
+    },
+    
+    searchInput: {
+      fontSize: 16,
+      color: '#333',
+    },
   });
   
 

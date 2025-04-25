@@ -19,13 +19,13 @@ export const login = async (id, password) => {
 
     console.log("3");
 
-    const access = response.headers["access"] || response.headers["authorization"];
-    const refresh = response.headers["refresh"]; // ⬅️ 만약 같이 오면
+    const access = response.headers["access"] 
+    const refresh = response.headers["refresh"]; //  만약 같이 오면
 
-    console.log("✅ 받은 access:", access);
-    console.log("✅ 받은 refresh:", refresh);
+    console.log(" 받은 access:", access);
+    console.log(" 받은 refresh:", refresh);
 
-    // ✅ accessToken에서 'Bearer ' 제거하고 저장
+    //  accessToken에서 'Bearer ' 제거하고 저장
     const accessToken = access?.startsWith("Bearer ")
       ? access.replace("Bearer ", "")
       : access;

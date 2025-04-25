@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet,TouchableOpacity , Alert, Touchable } from 'react-native';
 import * as Location from 'expo-location';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -31,7 +31,7 @@ const BoxInstallScreen = () => {
     }
 
     try {
-      await axios.patch(`http://192.168.0.51:8080/employee/installCompleted/${id}`, {
+      await axios.patch(`http://192.168.0.20:8080/employee/installCompleted/${id}`, {
         name,
         IPAddress,
         longitude: location.longitude,
@@ -48,15 +48,15 @@ const BoxInstallScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>📦 수거함 설치</Text>
+      <Text style={styles.title}> 수거함 설치</Text>
       <Text>이름: {name}</Text>
       <Text>IP 주소: {IPAddress}</Text>
 
       {location && (
         <View style={{ marginTop: 20 }}>
-          <Text>📍 위도: {location.latitude}</Text>
-          <Text>📍 경도: {location.longitude}</Text>
-          <Button title="설치 완료" onPress={handleInstallComplete} color="#4CAF50" />
+          <Text> 위도: {location.latitude}</Text>
+          <Text> 경도: {location.longitude}</Text>
+          <TouchableOpacity title="설치 완료" onPress={handleInstallComplete} color="#4CAF50" />
         </View>
       )}
     </View>

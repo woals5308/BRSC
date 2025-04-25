@@ -10,18 +10,18 @@ export const signup = async (userId, userPw, userName, userphoneNumber) => {
       phoneNumber: userphoneNumber,
     };
 
-    const response = await axiosInstance.post("/join", requestData, {
+    const response = await axiosInstance.post("/joinRequest", requestData, {
       headers: { "Content-Type": "application/json" },
     });
 
     console.log("회원가입 응답:", response.data);
 
-    // ✅ 백엔드에서 "Fail"이면 false 반환
+    //  백엔드에서 "Fail"이면 false 반환
     if (response.data === "Fail") {
       return false;
     }
 
-    // ✅ 백엔드에서 "Success"면 true 반환
+    //  백엔드에서 "Success"면 true 반환
     return true;
 
   } catch (error) {

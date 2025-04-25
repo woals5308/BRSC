@@ -12,7 +12,7 @@ export const QR = async(data) =>{
             Alert.alert("로그인이 필요합니다.");
             return;
         }
-        const response = await axiosInstance.get(`/map/openBox/${data}`)
+        const response = await axiosInstance.get(`/boxOpen/${data}`)
         router.push({
             pathname:"/components/GoogleMap",
             params:{data},

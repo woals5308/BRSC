@@ -4,8 +4,9 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useFetchTimer from "./hook/useFetchtimer";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Home = () => {
+
 
   const router = useRouter();
   useFetchTimer();

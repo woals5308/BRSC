@@ -25,7 +25,7 @@ export default function BottomNavigation() {
       </TouchableOpacity>
 
       {/* 오른쪽 아이콘 (이용내역, 내 정보) */}
-      <TouchableOpacity style={styles.navItemRight}>
+      <TouchableOpacity style={styles.navItemRight} onPress={()=>router.push('/page/boxlog')}>
         <MaterialCommunityIcons name="file-document-outline" size={24} color="gray" />
         <Text style={styles.navText}>이용내역</Text>
       </TouchableOpacity>

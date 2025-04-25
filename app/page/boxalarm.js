@@ -1,51 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import EventSource from 'react-native-event-source';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSSEAlarms } from "../hook/useSSEAlarms";
+import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm';
+import styles from '../style/boxalarmstyles';
+import axiosWebInstance from '../api/axiosweb';
+
+const ACCEPTABLE_TYPES = ['INSTALL_REQUEST', 'REMOVE_REQUEST']; // 실제 처리할 타입
 
 const AlarmPage = () => {
-  const [alarms, setAlarms] = useState([]);
+  const alarms = useSSEAlarms();
+  const [unresolvedAlarms, setUnresolvedAlarms] = useUnresolvedAlarms();
   const [acceptedIds, setAcceptedIds] = useState([]);
   const router = useRouter();
 
-  // ✅ 실시간 알림 수신 (SSE)
-  useEffect(() => {
-    const eventSource = new EventSource('https://192.168.0.20:8443/SSEsubscribe');
-
-    eventSource.addEventListener('alarm', (event) => {
-      const data = JSON.parse(event.data);
-      console.log('📩 수신된 알람:', data);
-      setAlarms((prev) => [data, ...prev.filter(a => a.id !== data.id)]); // 중복 제거 후 추가
-    });
-
-    eventSource.onerror = (err) => {
-      console.error('SSE 연결 오류:', err);
-    };
-
-    return () => eventSource.close();
-  }, []);
-
-  // ✅ 알림 수락 시 처리
   const handleAccept = async (item) => {
+    console.log("1")
+    console.log(item)
     const { id, name, IPAddress, longitude, latitude, type } = item;
 
-    if (acceptedIds.includes(id)) return; // 중복 방지
+    if (acceptedIds.includes(id)) return;
+    
     setAcceptedIds(prev => [...prev, id]);
-
+    setUnresolvedAlarms(prev => prev.filter(a => a.id !== id));
     try {
-      if (type === '설치') {
-        await axios.patch(`https://192.168.0.20:8443/employee/installInProgress/${id}`);
-        router.push({
-          pathname: '/boxinstall',
-          params: { id, name, IPAddress, longitude, latitude },
+      if (type === 'INSTALL_REQUEST') {
+        console.log("2")
+
+        const token = await AsyncStorage.getItem("usertoken");
+        console.log(token);
+        await axiosWebInstance.patch(`http://192.168.0.20:8080/employee/installInProgress/${id}`, null,
+          {
+          headers: {
+            access: `Bearer ${token}`,
+          },
         });
-      } else if (type === '제거') {
-        await axios.patch(`https://192.168.0.20:8443/employee/removeInProgress/${id}`);
-        router.push({
-          pathname: '/boxremove',
-          params: { id, name, IPAddress, longitude, latitude },
-        });
+
+        console.log("333")
+        
+        router.push({ pathname: '/page/boxinstall', params: { id, name, IPAddress, longitude, latitude } });
+      } else if (type === 'REMOVE_REQUEST') {
+        await axiosWebInstance.patch(`http://192.168.0.20:8080/employee/removeInProgress/${id}`);
+        router.push({ pathname: '/page/boxremove', params: { id, name, IPAddress, longitude, latitude } });
       }
     } catch (error) {
       console.error('요청 수락 실패:', error);
@@ -53,71 +50,49 @@ const AlarmPage = () => {
     }
   };
 
-  // ✅ 알림 UI 렌더링
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.message}>📢 {item.message}</Text>
-      {(item.type === '설치' || item.type === '제거') && (
-        <TouchableOpacity
-          style={styles.acceptButton}
-          onPress={() => handleAccept(item)}
-          disabled={acceptedIds.includes(item.id)}
-        >
-          <Text style={styles.acceptText}>
-            {acceptedIds.includes(item.id) ? '요청 수락됨' : '요청 수락'}
-          </Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+  const renderItem = (item, isRealtime = false) => {
+    const isAccepted = acceptedIds.includes(item.id);
+    const shouldShowButton = isRealtime
+      ? ACCEPTABLE_TYPES.includes(item.type)
+      : true;
+
+    return (
+      <View style={[styles.card, isAccepted && styles.acceptedCard]}>
+        <Text style={styles.message}>📢 {item.message}</Text>
+        {shouldShowButton && (
+          <TouchableOpacity
+            style={[styles.acceptButton, isAccepted && styles.disabledButton]}
+            onPress={() => handleAccept(item)}
+            disabled={isAccepted}
+          >
+            <Text style={styles.acceptText}>
+              {isAccepted ? '요청 수락됨' : '요청 수락'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>🔔 실시간 수거함 요청</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.sectionHeader}>미해결 알람</Text>
+      <FlatList
+        data={unresolvedAlarms}
+        keyExtractor={(item, index) => `unresolved-${index}`}
+        renderItem={({ item }) => renderItem(item, false)}
+        scrollEnabled={false}
+      />
+      <View style={{ height: 30 }} />
+      <Text style={styles.sectionHeader}>실시간 수거함 요청</Text>
       <FlatList
         data={alarms}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 30 }}
+        keyExtractor={(item, index) => `realtime-${index}`}
+        renderItem={({ item }) => renderItem(item, true)}
+        scrollEnabled={false}
       />
-    </View>
+    </ScrollView>
   );
 };
 
 export default AlarmPage;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    left:60,
-    top:30,
-  },
-  card: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  message: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  acceptButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  acceptText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-});

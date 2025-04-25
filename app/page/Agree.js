@@ -6,6 +6,7 @@ import styles from "../style/argreestyles";
 
 
 const TermsPage =()=> {
+
   const router = useRouter();
   const [isChecked, setIsChecked] = useState(false);
 

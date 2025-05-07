@@ -1,12 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Modal, Animated, TouchableWithoutFeedback } from 'react-native';
-import { useSSEAlarms } from '../hook/useSSEAlarms'; // 훅 import
 import styles from '../style/alarmstyles';
 import { usePolyfill } from '../hook/usePolyfill';  //기존의 쓰던 3번째 줄 지우고 이걸로 가져오면됨
 
 const NotificationTab = ({ visible, onClose }) => {
-  const alarms = useSSEAlarms(); //여기 부분을 useSSEAlarms 부분을 usePolyfill로 바꾸면됨됨
-  const latestMessage = alarms[0]?.message || '알림이 없습니다.';
+  const alarms = usePolyfill(); //여기 부분을 useSSEAlarms 부분을 usePolyfill로 바꾸면됨됨
+  const latestMessage = (alarms && alarms.length > 0 ) ? alarms[0].message : '알림이 없습니다.';
   const translateX = useRef(new Animated.Value(300)).current;
 
   // 슬라이딩 애니메이션

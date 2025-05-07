@@ -36,6 +36,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
+  sendCodeButton: {
+    backgroundColor: "#888",
+    padding: 12,
+    marginVertical: 8,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  
+  verifyButton: {
+    backgroundColor: "#555",
+    padding: 12,
+    marginBottom: 10,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  
 });
 
 export default styles

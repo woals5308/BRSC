@@ -16,7 +16,8 @@ import { appleSignIn } from "../social/appleAuth";
 import { naverSignIn } from "../social/naverAuth";
 import { login } from "../api/loginApi";
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context"; // ✅ 추가
+import { SafeAreaView } from "react-native-safe-area-context"; //  추가
+import { connectSSE } from "../hook/usePolyfill";
 
 const Login = () => {
   const [id, setId] = useState("");
@@ -43,6 +44,7 @@ const Login = () => {
     try {
       const loginSuccess = await login(id, password);
       if (loginSuccess) {
+        await connectSSE();
         router.push("/page/NickName");
       } else {
         alert("로그인 실패");

@@ -13,7 +13,15 @@
           "isAndroidBackgroundLocationEnabled": true
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "useCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "name": "notetest-app",
     "slug": "notetest-app",

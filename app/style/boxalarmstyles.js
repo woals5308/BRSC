@@ -1,43 +1,70 @@
 import { StyleSheet } from "react-native";
+import { Dimensions } from "react-native";
 
+
+
+const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        padding: 20,
-      },
-      sectionHeader: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 10,
-      },
-      card: {
-        backgroundColor: '#f5f5f5',
-        padding: 16,
-        borderRadius: 10,
-        marginBottom: 15,
-      },
-      acceptedCard: {
-        backgroundColor: '#e0f7e9',
-      },
-      message: {
-        fontSize: 16,
-        marginBottom: 10,
-      },
-      acceptButton: {
-        backgroundColor: '#4CAF50',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 6,
-        alignSelf: 'flex-start',
-      },
-      disabledButton: {
-        backgroundColor: '#9E9E9E',
-      },
-      acceptText: {
-        color: '#fff',
-        fontWeight: 'bold',
-      },
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 30,
+  },
+  sectionHeader: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  listContainer: {
+    maxHeight: height * 0.4,  // 리스트 박스 크기
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: '#fafafa',
+  },
+  card: {
+    backgroundColor: '#f9f9f9',
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  itemTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  itemSubTitle: {
+    fontSize: 16,
+    color: '#555',
+    marginBottom: 5,
+  },
+  message: {
+    fontSize: 15,
+    color: '#777',
+    marginBottom: 10,
+  },
+  acceptButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  disabledButton: {
+    backgroundColor: '#aaa',
+  },
+  acceptText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
+
 
 export default styles;

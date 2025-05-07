@@ -1,97 +1,113 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSSEAlarms } from "../hook/useSSEAlarms";
-import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm';
-import styles from '../style/boxalarmstyles';
-import axiosWebInstance from '../api/axiosweb';
 
-const ACCEPTABLE_TYPES = ['INSTALL_REQUEST', 'REMOVE_REQUEST']; // 실제 처리할 타입
+import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm'; // 미해결 알람 리스트 훅
+import axiosWebInstance from '../api/axiosweb'; // axios 인스턴스
+import styles from '../style/boxalarmstyles'; // 스타일
 
 const AlarmPage = () => {
-  const alarms = useSSEAlarms();
-  const [unresolvedAlarms, setUnresolvedAlarms] = useUnresolvedAlarms();
-  const [acceptedIds, setAcceptedIds] = useState([]);
+  const [unresolvedAlarms, setUnresolvedAlarms] = useUnresolvedAlarms(); // 미해결 알람 목록
+  const [acceptedIds, setAcceptedIds] = useState([]); // 수락한 알람 ID 목록
   const router = useRouter();
 
+  // 설치 요청(INSTALL_REQUEST), 제거 요청(REMOVE_REQUEST)만 필터링하여 표시
+  const filteredAlarms = unresolvedAlarms.filter(
+    (alarm) => alarm.type === 'INSTALL_REQUEST' || alarm.type === 'REMOVE_REQUEST'
+  );
+
+  // 알람 수락 시 실행되는 함수
   const handleAccept = async (item) => {
-    console.log("1")
-    console.log(item)
     const { id, name, IPAddress, longitude, latitude, type } = item;
 
+    // 이미 수락한 경우 중복 실행 방지
     if (acceptedIds.includes(id)) return;
-    
-    setAcceptedIds(prev => [...prev, id]);
-    setUnresolvedAlarms(prev => prev.filter(a => a.id !== id));
+
+    // 수락된 알람 ID 저장 및 화면에서 제거
+    setAcceptedIds((prev) => [...prev, id]);
+    setUnresolvedAlarms((prev) => prev.filter((a) => a.id !== id));
+
     try {
+      const token = await AsyncStorage.getItem('usertoken'); // JWT 토큰 불러오기
+
+      // 알람 타입에 따라 API 요청 전송
       if (type === 'INSTALL_REQUEST') {
-        console.log("2")
-
-        const token = await AsyncStorage.getItem("usertoken");
-        console.log(token);
-        await axiosWebInstance.patch(`http://192.168.0.20:8080/employee/installInProgress/${id}`, null,
-          {
-          headers: {
-            access: `Bearer ${token}`,
-          },
+        await axiosWebInstance.patch(`/employee/installInProgress/${id}`, null, {
+          headers: { access: `Bearer ${token}` },
         });
-
-        console.log("333")
-        
-        router.push({ pathname: '/page/boxinstall', params: { id, name, IPAddress, longitude, latitude } });
       } else if (type === 'REMOVE_REQUEST') {
-        await axiosWebInstance.patch(`http://192.168.0.20:8080/employee/removeInProgress/${id}`);
-        router.push({ pathname: '/page/boxremove', params: { id, name, IPAddress, longitude, latitude } });
+        await axiosWebInstance.patch(`/employee/removeInProgress/${id}`, null, {
+          headers: { access: `Bearer ${token}` },
+        });
       }
+
+      // 수락 후 박스 리스트 페이지로 이동하며 알람 정보 전달
+      router.push({
+        pathname: '/page/boxlist',
+        params: {
+          alarmId: id,
+          name,
+          IPAddress,
+          longitude,
+          latitude,
+          type,
+        },
+      });
+
     } catch (error) {
       console.error('요청 수락 실패:', error);
-      Alert.alert('오류', '요청 수락 중 문제가 발생했습니다.');
+      Alert.alert('오류', '요청 처리 중 문제가 발생했습니다.');
     }
   };
 
-  const renderItem = (item, isRealtime = false) => {
+  // 개별 알람 카드 렌더링 함수
+  const renderItem = ({ item }) => {
     const isAccepted = acceptedIds.includes(item.id);
-    const shouldShowButton = isRealtime
-      ? ACCEPTABLE_TYPES.includes(item.type)
-      : true;
 
     return (
-      <View style={[styles.card, isAccepted && styles.acceptedCard]}>
-        <Text style={styles.message}>📢 {item.message}</Text>
-        {shouldShowButton && (
-          <TouchableOpacity
-            style={[styles.acceptButton, isAccepted && styles.disabledButton]}
-            onPress={() => handleAccept(item)}
-            disabled={isAccepted}
-          >
-            <Text style={styles.acceptText}>
-              {isAccepted ? '요청 수락됨' : '요청 수락'}
-            </Text>
-          </TouchableOpacity>
-        )}
+      <View style={styles.card}>
+        <Text style={styles.itemTitle}>박스 ID: {item.type}</Text>
+        <Text style={styles.itemSubTitle}>
+          요청 타입: {item.type === 'INSTALL_REQUEST' ? '설치 요청' : '제거 요청'}
+        </Text>
+        <Text style={styles.message}>{item.message}</Text>
+
+        <TouchableOpacity
+          style={[styles.acceptButton, isAccepted && styles.disabledButton]}
+          onPress={() => handleAccept(item)}
+          disabled={isAccepted}
+        >
+          <Text style={styles.acceptText}>
+            {isAccepted ? '요청 수락됨' : '요청 수락'}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.sectionHeader}>미해결 알람</Text>
-      <FlatList
-        data={unresolvedAlarms}
-        keyExtractor={(item, index) => `unresolved-${index}`}
-        renderItem={({ item }) => renderItem(item, false)}
-        scrollEnabled={false}
-      />
-      <View style={{ height: 30 }} />
-      <Text style={styles.sectionHeader}>실시간 수거함 요청</Text>
-      <FlatList
-        data={alarms}
-        keyExtractor={(item, index) => `realtime-${index}`}
-        renderItem={({ item }) => renderItem(item, true)}
-        scrollEnabled={false}
-      />
-    </ScrollView>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <Text style={styles.sectionHeader}>미해결 알람</Text>
+        <View style={styles.listContainer}>
+          <FlatList
+            data={filteredAlarms} // 수거요청만 보여줌
+            keyExtractor={(item) => `unresolved-${item.id}`}
+            renderItem={renderItem}
+            scrollEnabled={false}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

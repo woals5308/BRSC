@@ -1,8 +1,11 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import React, {  useState } from "react";
+import { View, Text, TextInput, TouchableOpacity ,Alert} from "react-native";
 import { signup } from "../api/signupApi";
 import styles from "../style/singstyles";
 import { useRouter } from "expo-router";
+import { sendVerificationCode } from "../api/signupApi";
+import { verifyCode } from "../api/signupApi";
+
 
 const Signup = () => {
 
@@ -12,6 +15,60 @@ const Signup = () => {
   const [userPw, setUserPw] = useState("");
   const [userName, setUserName] = useState("");
   const [userphoneNunber, setUserphoneNumber] = useState("");
+  //여기까지는 기존의 로그인 하던 상태 관리 영역이고 추가로 인증 부분은 밑에 작성할 것
+
+  const [verificationCode,setVerificationCode] = useState("")
+  const [isCodesent, setIsCodesent] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+
+
+  //인증 번호 발송
+  const handleSendCode = async()=>{
+    if(!userphoneNunber){
+      Alert.alert("전화번호를 입력해주세요");
+      return;
+    }
+
+    try{
+      const result = await sendVerificationCode(userphoneNunber);
+      if(result === "Success"){
+        setIsCodesent(true);
+        Alert.alert("인증성공");
+      }else{
+        Alert.alert("실패....");
+      }
+    }catch(error){
+      console.error("에러띠",error)
+      return false;
+    }
+  };
+
+
+  //인증 번호 확인
+
+  const handleVerifyCode = async()=>{
+    if(!verificationCode){
+      Alert.alert("인증번호를 입력하삼");
+      return;
+    }
+    
+    try{
+      const result = await verifyCode(userphoneNunber,verificationCode);
+      if(result === "Success"){
+        setIsVerified(true)
+        Alert.alert("인증 성공")
+      }else{
+        Alert.alert("인증 실패임 인증 번호가 틀리다 임마");
+      }
+    }catch(error){
+      console.error("에러발생발생",error);
+
+      return false;
+    }
+  };
+
+
+
 
   // 회원가입 처리 함수
   const handleSingup = async () => {
@@ -19,6 +76,12 @@ const Signup = () => {
       alert("모든 정보를 입력해주세요!");
       return;
     }
+
+    if (!isVerified) {
+      Alert.alert("전화번호 인증이 필요합니다.");
+      return;
+    }
+
     try {
       const result = await signup(userId, userPw, userName, userphoneNunber);
       
@@ -69,15 +132,39 @@ const Signup = () => {
         onChangeText={setUserName}
       />
 
-      {/* 폰 번호*/}
+      {/* 전화번호 입력 */}
       <TextInput
         style={styles.input}
-        placeholder="핸드폰 번호 :"
-        placeholderTextColor="#bbb"
+        placeholder="전화번호 :"
         value={userphoneNunber}
         onChangeText={setUserphoneNumber}
+        keyboardType="phone-pad"
+        placeholderTextColor="#bbb"
       />
 
+      {/* 인증번호 발송 버튼 */}
+      <TouchableOpacity style={styles.sendCodeButton} onPress={handleSendCode}>
+        <Text style={styles.signupText}>인증번호 전송</Text>
+      </TouchableOpacity>
+
+
+
+      {/* 인증번호 입력칸 & 확인 버튼 (코드 발송 이후 보여줌) */}
+      {isCodesent && (
+        <>
+          <TextInput
+            style={styles.input}
+            placeholder="인증번호 입력"
+            value={verificationCode}
+            onChangeText={setVerificationCode}
+            keyboardType="number-pad"
+            placeholderTextColor="#bbb"
+          />
+          <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyCode}>
+            <Text style={styles.signupText}>인증 확인</Text>
+          </TouchableOpacity>
+        </>
+      )}
 
       {/* 회원가입 버튼 */}
       <TouchableOpacity style={styles.signupButton} onPress={handleSingup}>

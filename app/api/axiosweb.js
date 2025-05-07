@@ -4,7 +4,7 @@ import { Alert } from 'react-native';
 
 //  Axios 인스턴스 생성
 const axiosWebInstance = axios.create({
-  baseURL: "http://192.168.0.20:8080/",
+  baseURL: "http://192.168.0.210:8080/",
   timeout: 5000,
 
 });
@@ -80,7 +80,7 @@ axiosWebInstance.interceptors.response.use(
           if (newAccessToken) {
             // ❗ Bearer 제거하지 않음 (백엔드에서 그대로 기대함)
             await AsyncStorage.setItem("usertoken", newAccessToken);
-            console.log(" [저장 완료] access 토큰 갱신 저장됨");
+            console.log(" [저장 완료] access 토큰 갱신 저장됨");  
   
             originalRequest.headers.access = newAccessToken;
             console.log(" [요청 재시도] 새 access 토큰으로 원래 요청 재시도:", originalRequest.url);

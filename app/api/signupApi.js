@@ -1,5 +1,6 @@
 import axiosInstance from "./axiosInstance";
 
+
 // 회원가입 API
 export const signup = async (userId, userPw, userName, userphoneNumber) => {
   try {
@@ -39,3 +40,32 @@ export const signup = async (userId, userPw, userName, userphoneNumber) => {
     return false; // 에러 발생 시 false 반환
   }
 };
+
+
+//인증 번호 전송
+export const sendVerificationCode = async (phoneNumber) =>{
+  try{
+    const res = await axiosInstance.post(`/send-one/${phoneNumber}`)
+    console.log("인증 번호 전송띠", res.data);
+    return res.data;
+  }catch(error){
+    console.error("실패띠",error);
+    return false;
+  }
+};
+
+
+//인증 번호 확인
+export const verifyCode = async(phoneNumber, code) =>{
+  try{
+    const res = await axiosInstance.post("/verify-code", null,{
+      params:{phoneNumber,code},
+    });
+    console.log("앙 인증띠", res.data);
+    return res.data
+  }catch(error){
+    console.error("앙 에러띠",error);
+
+    return false;
+  }
+} 

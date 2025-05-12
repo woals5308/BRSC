@@ -1,11 +1,12 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
+import { API } from "../config/env";
 
 //expo 실행 명령어 npx expo start --dev-client
 //이거 팀원들이랑 연동할 떄 사용할 인스턴스
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.0.210:8081/",
+  baseURL: API.USER,
   timeout: 5000,
   
 });

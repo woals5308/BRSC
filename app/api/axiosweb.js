@@ -1,10 +1,11 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from 'react-native';
+import { API } from "../config/env";
 
 //  Axios 인스턴스 생성
 const axiosWebInstance = axios.create({
-  baseURL: "http://192.168.0.210:8080/",
+  baseURL: API.ADMIN,
   timeout: 5000,
 
 });

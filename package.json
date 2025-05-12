@@ -37,6 +37,8 @@
     "react-native-gesture-handler": "^2.25.0",
     "react-native-maps": "1.18.0",
     "react-native-pager-view": "^6.7.1",
+    "react-native-safe-area-context": "^5.4.0",
+    "react-native-screens": "~4.4.0",
     "react-native-web": "~0.19.6"
   },
   "devDependencies": {

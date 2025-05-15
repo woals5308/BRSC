@@ -20,7 +20,7 @@ export default function BottomNavigation() {
       </TouchableOpacity>
 
       {/* ✅ QR 스캔 버튼 (가운데) */}
-      <TouchableOpacity onPress={()=>router.push('/page/QR')}>
+      <TouchableOpacity onPress={()=>router.push('/page/boxlist')}>
         <Image style={styles.scanButton} source={require('../assets/image/qr.png')} />
       </TouchableOpacity>
 

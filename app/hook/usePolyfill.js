@@ -2,20 +2,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
 import { EventSourcePolyfill } from "event-source-polyfill";
 
-// 🔸 외부에서도 알람 상태를 업데이트할 수 있도록 전역에서 set 함수와 저장소 선언
+//  외부에서도 알람 상태를 업데이트할 수 있도록 전역에서 set 함수와 저장소 선언
 let setAlarmsExternal = null;
 let alarms = []; // 알람을 누적 저장하는 변수
 let sseRef = null; // SSE 연결 객체
 let reconnectTimeoutRef = null; // 재연결 타이머
 
-// 🔸 알람 데이터를 사용하는 컴포넌트에서 이 훅을 사용하여 알람 상태 접근
+// 알람 데이터를 사용하는 컴포넌트에서 이 훅을 사용하여 알람 상태 접근
 export const usePolyfill = () => {
   const [alarmsState, setAlarms] = useState([]);
   setAlarmsExternal = setAlarms; // 외부에서도 setState 가능하도록 저장
   return alarmsState; // 화면에서 사용할 알람 상태 반환
 };
 
-// 🔸 로그인 성공 시 호출하여 알람 수신을 시작하는 함수
+//  로그인 성공 시 호출하여 알람 수신을 시작하는 함수
 export const connectSSE = async () => {
   const token = await AsyncStorage.getItem("usertoken"); // 저장된 JWT 토큰 조회
   if (!token) return; // 토큰 없으면 연결 안 함
@@ -26,7 +26,7 @@ export const connectSSE = async () => {
   }
 
   // 새로운 SSE 연결 생성
-  const sse = new EventSourcePolyfill("http://192.168.0.20:8080/SSEsubscribe", {
+  const sse = new EventSourcePolyfill("http://192.168.0.210:8080/SSEsubscribe", {
     headers: {
       access: `Bearer ${token}`, // 인증 헤더 포함
     },

@@ -87,7 +87,7 @@ const BoxInstallPage = () => {
         onPress={handleInstallComplete}
         style={{ backgroundColor: '#008CBA', padding: 16, borderRadius: 8 }}
       >
-        <Text style={{ color: 'white', fontSize: 16 }}>설치 완료</Text>
+        <Text style={{ color: 'black', fontSize: 16 }}>설치 완료</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

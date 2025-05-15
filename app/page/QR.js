@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, SafeAreaView, StatusBar, Platform, TouchableOpacity, Switch } from "react-native";
 import { CameraView } from "expo-camera";
 import { useRouter } from "expo-router";
-import { QR } from "../api/cameraApi";
+import { handleQRScan } from "../api/cameraApi";
 import { AntDesign } from "@expo/vector-icons";
 import styles from "../style/QRstyles";
 
@@ -33,7 +33,7 @@ const QRScanner =()=> {
           style={styles.camStyle}
           facing="back"
           barcodeScannerSettings={{ barcodeTypes: "qr" }}
-          onBarcodeScanned={({ data }) => QR(data)}
+          onBarcodeScanned={({ data }) => handleQRScan(data)}
         />
         <View style={styles.viewfinder} />
       </View>

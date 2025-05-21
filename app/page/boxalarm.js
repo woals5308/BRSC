@@ -35,13 +35,14 @@ const AlarmPage = () => {
     'INSTALL_REQUEST' , 'REMOVE_REQUEST' , 'COLLECTION_RECOMMENDED'].includes(alarm.type)
   );
 
+
     console.log('[AlarmPage] 미해결 알람 목록:', unresolvedAlarms);
-    
   // 알람 수락 시 실행되는 함수
   const handleAccept = async (item) => {
+    console.log("Handle Accept.......................................")
     const { id, name, IPAddress, longitude, latitude, type, boxId} = item;
-
     // 이미 수락한 경우 중복 실행 방지
+    console.log(item);
     if (acceptedIds.includes(id)) return;
 
     // 수락된 알람 ID 저장 및 화면에서 제거
@@ -66,26 +67,21 @@ const AlarmPage = () => {
         })
       }
 
-      
-      router.push({
-        pathname:'page/boxlist',
- params: {
-      alarmId:  id.toString(),    // id는 number라 문자열로 변환
-      name:     name,             // 이미 string 타입
-      IPAddress: IPAddress,       // 이미 string 타입
-      longitude: longitude.toString(), // number → string
-      latitude:  latitude.toString(),  // number → string
-      type:     type,             // enum 혹은 string
-      boxId:    boxId.toString(), // number → string
-    },
-      });
-
+router.push({
+  pathname: '/page/boxlist',
+  params: {
+    alarmId: String(item.id),
+    boxId: String(item.boxId),
+    type: String(item.type),
+  }
+});
 
     } catch (error) {
       console.error('요청 수락 실패:', error);
       Alert.alert('오류', '요청 처리 중 문제가 발생했습니다.');
     }
   };
+
 
   // 개별 알람 카드 렌더링 함수
   const renderItem = ({ item }) => {
@@ -120,7 +116,8 @@ const AlarmPage = () => {
         <View style={styles.listContainer}>
           
           <FlatList
-            data={filteredAlarms} // 수거요청만 보여줌
+            
+            data={filteredAlarms} // 미해결 요청들을 보여줌
             keyExtractor={(item) => `unresolved-${item.id}`}
             renderItem={renderItem}
             scrollEnabled={false}

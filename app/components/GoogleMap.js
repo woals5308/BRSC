@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, Modal,
-  Pressable, KeyboardAvoidingView, Platform
+  Pressable, KeyboardAvoidingView, Platform, Image
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import useFetchLocationAndData from "../hook/userFetchLocationAndData";
@@ -10,6 +10,8 @@ import { useRouter } from "expo-router";
 import { icons } from "../assets/icon/icons";
 import styles from "../style/mapstyles";
 import { useSearchBox } from "../hook/useSearchBox";
+import useSecuredImage from "../hook/useBoxImage";
+
 
 const getBoxIcon = (box) => {
   const isFire =
@@ -27,7 +29,7 @@ const getBoxIcon = (box) => {
   }
 
   if (box.usageStatus === 'USED') {
-    return null; // 아이콘 없음, 모달에서 텍스트만 노출
+    return null;
   }
 
   if (box.usageStatus === 'AVAILABLE') {
@@ -36,6 +38,7 @@ const getBoxIcon = (box) => {
 
   return null;
 };
+
 const getPercentage = (usedVolume, maxVolume = 100) =>
   Math.round((usedVolume / maxVolume) * 100);
 
@@ -44,12 +47,12 @@ const binNames = ['건전지', '방전된 배터리', '방전되지 않은 배�
 const Map = () => {
   const router = useRouter();
   const { currentLocation, collectionPoints } = useFetchLocationAndData();
-
   const mapRef = useRef(null);
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [bottomSheetVisible, setBottomSheetVisible] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const imageUri = useSecuredImage(`/boxImage/${selectedPoint?.id}`);
 
   const { handleSearch } = useSearchBox(mapRef);
 
@@ -152,27 +155,49 @@ const Map = () => {
                         ⚠️ 사용 금지 상태입니다
                       </Text>
                     ) : (
-                      <>
-                        <Text style={styles.modalInfo}>수거함 사용률 요약:</Text>
-                        {[0, 1, 2].map((i) => {
-                          const volume = selectedPoint[`volume${i + 1}`];
-                          const percent = getPercentage(volume, 100);
-                          return (
-                            <Text
-                              key={i}
-                              style={[
-                                styles.modalInfo,
-                                percent >= 80 && { color: 'red', fontWeight: 'bold' },
-                              ]}
-                            >
-                              {binNames[i]}: {percent}%
-                            </Text>
-                          );
-                        })}
-                      </>
+                      <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                        {/* 왼쪽: 텍스트 */}
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.modalInfo}>수거함 사용률 요약:</Text>
+                          {[0, 1, 2].map((i) => {
+                            const volume = selectedPoint[`volume${i + 1}`];
+                            const percent = getPercentage(volume, 100);
+                            return (
+                              <Text
+                                key={i}
+                                style={[
+                                  styles.modalInfo,
+                                  percent >= 80 && { color: 'red', fontWeight: 'bold' },
+                                ]}
+                              >
+                                {binNames[i]}: {percent}%
+                              </Text>
+                            );
+                          })}
+                        </View>
+
+                              {/* 오른쪽: 이미지 */}
+                              {imageUri ? (
+                                <Image
+                                  source={{ uri: imageUri }}
+                                  style={{
+                                    width: 100,
+                                    height: 100,
+                                    borderRadius: 10,
+                                    borderWidth: 1,
+                                    borderColor: '#ccc',
+                                    marginLeft: 10,
+                                    alignSelf: 'center',
+                                  }}
+                                />
+                              ) : (
+                                <Text style={{ marginLeft: 10, color: '#aaa' }}>이미지를 불러오는 중...</Text>
+                              )}
+                      </View>
                     )}
                   </View>
 
+                  {/* 고객센터 영역 */}
                   <View style={styles.checkboxContainer}>
                     <Text style={styles.checkboxText}>QR코드 인식에 문제가 있나요?</Text>
                     <TouchableOpacity style={styles.supportButton}>

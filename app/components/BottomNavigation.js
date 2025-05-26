@@ -9,7 +9,7 @@ export default function BottomNavigation() {
   return (
     <View style={styles.navbar}>
       {/* 왼쪽 아이콘 (홈, 쇼핑) */}
-      <TouchableOpacity style={styles.navItemLeft} onPress={()=>router.replace('/page/Main')}>
+      <TouchableOpacity style={styles.navItemLeft} onPress={()=>router.push('/page/Main')}>
         <FontAwesome5 name="home" size={20} color="gray" />
         <Text style={styles.navText}>홈</Text>
       </TouchableOpacity>
@@ -25,11 +25,11 @@ export default function BottomNavigation() {
       </TouchableOpacity>
 
       {/* 오른쪽 아이콘 (이용내역, 내 정보) */}
-      <TouchableOpacity style={styles.navItemRight} onPress={()=>router.push('/page/boxlist')}>
+      <TouchableOpacity style={styles.navItemRight} onPress={()=>router.push('/page/boxlog')}>
         <MaterialCommunityIcons name="file-document-outline" size={24} color="gray" />
         <Text style={styles.navText}>이용내역</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItemRight}>
+      <TouchableOpacity style={styles.navItemRight} onPress={()=>router.push('/page/MyInfo')}>
         <FontAwesome5 name="user" size={20} color="gray" />
         <Text style={styles.navText}>내 정보</Text>
       </TouchableOpacity>

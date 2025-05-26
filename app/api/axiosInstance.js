@@ -18,12 +18,12 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem("usertoken");
-    const skipTokenUrls = ["/login", "/joinRequest"]; // 인증 불필요한 경로
+    const skipTokenUrls = ["/login", "/joinRequest","/join", "/reissue", "/send-one/{to}", "/verify-code"];
 
-    const isPublic = skipTokenUrls.some((url) => config.url?.includes(url));
+    const isPublic = skipTokenUrls.some((url) => config.url?.startsWith(url));
 
     if (token && !isPublic) {
-      config.headers.access = token; // 백엔드가 기대하는 헤더 이름
+      config.headers.access = "Bearer " + token; // 백엔드가 기대하는 헤더 이름
       console.log("[요청 인터셉터] access 헤더 설정 완료:", config.headers.access);
     } else {
       console.log("[요청 인터셉터] 인증 필요 없는 요청 또는 토큰 없음 - 헤더 생략");

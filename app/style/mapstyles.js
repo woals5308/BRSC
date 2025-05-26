@@ -5,8 +5,30 @@ const styles = StyleSheet.create({
   
     mapContainer: { flex: 1 },
   
+    
     map: { width: "100%", height: "100%" },
   
+    boxImage: {
+  width: '100%',
+  height: 160,
+  borderRadius: 8,
+  marginTop: 12,
+},
+
+noImageBox: {
+  width: '100%',
+  height: 160,
+  borderRadius: 8,
+  backgroundColor: '#eee',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginTop: 12,
+},
+
+noImageText: {
+  color: '#999',
+},
+
     bottomSheet: {
       position: "absolute",
       bottom: 0,

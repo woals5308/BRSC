@@ -4,14 +4,13 @@ import axiosWebInstance from "../api/axiosweb";   // 웹 → 사진/알람 업�
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import { router } from "expo-router";
-
-// 1. QR 인식 시 문 열기 (IOT)
-export const handleQRScan = async (data) => {
+//수거함 문 열기기
+export const handleQRScan = async (data, router) => {
   try {
     const { alarmId, boxId } = JSON.parse(data);
     const token = await AsyncStorage.getItem("usertoken");
 
-    const response = await axiosInstance.get(`/employee/boxOpen/${alarmId}/${boxId}/`, {
+    const response = await axiosInstance.get(`/employee/boxOpen/${alarmId}/${boxId}`, {
       headers: { access: `Bearer ${token}` },
     });
 
@@ -28,7 +27,6 @@ export const handleQRScan = async (data) => {
     Alert.alert("오류", "QR 처리 중 오류 발생");
   }
 };
-
 // 3. 문 닫기 (IOT)
 export const requestBoxClose = async (alarmId, boxId) => {
   const token = await AsyncStorage.getItem("usertoken");

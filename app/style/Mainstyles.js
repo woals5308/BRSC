@@ -92,6 +92,23 @@ const styles = StyleSheet.create({
     
     
   },
+  badgeContainer: {
+  position: 'absolute',
+  top: -5,
+  right: -5,
+  backgroundColor: 'red',
+  borderRadius: 10,
+  width: 18,
+  height: 18,
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 99,
+},
+badgeText: {
+  color: 'white',
+  fontSize: 10,
+  fontWeight: 'bold',
+},
 
   helpSection: {
     marginBottom: 15,

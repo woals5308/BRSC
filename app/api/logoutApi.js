@@ -10,6 +10,7 @@ export const logout = async () =>{
     try{
         await AsyncStorage.removeItem("usertoken");
         alert("로그아웃되었습니다.");
+        router.push('/page/LoginPage');
     }catch(error){
         console.log("로그아웃 요청 실패: ",error);
     }

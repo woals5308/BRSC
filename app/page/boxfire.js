@@ -1,14 +1,14 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CameraView, useCameraPermissions, CameraType } from 'expo-camera';
-import * as Location from 'expo-location';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosWebInstance from '../api/axiosweb';
 import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm';
 
-const BoxInstallPage = () => {
+const FireHandlePage = () => {
   const { alarmId } = useLocalSearchParams();
   const [unresolvedAlarms] = useUnresolvedAlarms();
   const [alarm, setAlarm] = useState(null);
@@ -23,18 +23,9 @@ const BoxInstallPage = () => {
     }
   }, [alarmId, unresolvedAlarms]);
 
-  const handleInstallComplete = async () => {
+  const handleFireComplete = async () => {
     try {
       if (!alarm) return;
-
-      const { status: locStatus } = await Location.requestForegroundPermissionsAsync();
-      if (locStatus !== 'granted') {
-        Alert.alert('위치 권한이 필요합니다.');
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync({});
-      const coords = location.coords;
 
       if (!cameraRef.current) {
         Alert.alert('카메라 참조를 찾을 수 없습니다.');
@@ -44,17 +35,15 @@ const BoxInstallPage = () => {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
 
       const formData = new FormData();
-      formData.append('longitude', coords.longitude);
-      formData.append('latitude', coords.latitude);
       formData.append('file', {
         uri: photo.uri,
-        name: 'install_photo.jpg',
+        name: 'fire_photo.jpg',
         type: 'image/jpeg',
       });
 
       const token = await AsyncStorage.getItem('usertoken');
 
-      await axiosWebInstance.patch(`/employee/installCompleted/${alarm.id}`, formData, {
+      await axiosWebInstance.patch(`/employee/fireCompleted/${alarm.id}`, formData, {
         headers: {
           access: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -62,11 +51,11 @@ const BoxInstallPage = () => {
       });
 
       await AsyncStorage.setItem(`completed-${alarm.id}`, 'true');
-      Alert.alert('설치 완료', '사진과 위치 정보가 전송되었습니다.');
-      router.replace('/page/boxlist');
+      Alert.alert('처리 완료', '화재 사진이 전송되었습니다.');
+      router.push('/page/boxlist');
     } catch (error) {
-      console.error('설치 완료 처리 실패:', error);
-      Alert.alert('오류', '설치 처리 중 오류 발생');
+      console.error('화재 처리 실패:', error);
+      Alert.alert('오류', '화재 처리 중 오류 발생');
     }
   };
 
@@ -89,14 +78,13 @@ const BoxInstallPage = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-<CameraView
-  ref={cameraRef}
-  style={styles.camera}
-  facing="back"  //  문자열 직접 지정
-/>
-
-      <TouchableOpacity style={styles.completeButton} onPress={handleInstallComplete}>
-        <Text style={styles.buttonText}> 설치 완료</Text>
+      <CameraView
+        ref={cameraRef}
+        style={styles.camera}
+        facing="back"
+      />
+      <TouchableOpacity style={styles.completeButton} onPress={handleFireComplete}>
+        <Text style={styles.buttonText}>화재 처리 완료</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -111,7 +99,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   completeButton: {
-    backgroundColor: '#007aff',
+    backgroundColor: '#d9534f', // 빨간 버튼
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -132,4 +120,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BoxInstallPage;
+export default FireHandlePage;

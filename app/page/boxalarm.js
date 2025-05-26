@@ -4,55 +4,42 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  ScrollView,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter ,useEffect} from 'expo-router';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm'; // 미해결 알람 리스트 훅
-import axiosWebInstance from '../api/axiosweb'; // axios 인스턴스
-import styles from '../style/boxalarmstyles'; // 스타일
-// === 여기에 타입별 한글 정의할 꺼임
-const TYPE_LABELS ={
-  INSTALL_REQUEST : '설치 요청',
-  REMOVE_REQUEST : '제거 요청',
-  COLLECTION_RECOMMNDED : '수거 권장',
+import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm'; // ✅ fetchAlarms 지원 훅
+import axiosWebInstance from '../api/axiosweb';
+import styles from '../style/boxalarmstyles';
+
+const TYPE_LABELS = {
+  INSTALL_REQUEST: '설치 요청',
+  REMOVE_REQUEST: '제거 요청',
+  COLLECTION_RECOMMENDED: '수거 권장',
+  FIRE : '화재 발생',
 };
 
-
-
-
-
 const AlarmPage = () => {
-  const [unresolvedAlarms, setUnresolvedAlarms] = useUnresolvedAlarms(); // 미해결 알람 목록
-  const [acceptedIds, setAcceptedIds] = useState([]); // 수락한 알람 ID 목록
+  const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms(); // ✅ fetchAlarms 추가
+  const [acceptedIds, setAcceptedIds] = useState([]);
   const router = useRouter();
-
-  // 설치 요청(INSTALL_REQUEST), 제거 요청(REMOVE_REQUEST)만 필터링하여 표시
-  const filteredAlarms = unresolvedAlarms.filter(alarm =>[
-    'INSTALL_REQUEST' , 'REMOVE_REQUEST' , 'COLLECTION_RECOMMENDED'].includes(alarm.type)
+  const filteredAlarms = unresolvedAlarms.filter(alarm =>
+    ['INSTALL_REQUEST', 'REMOVE_REQUEST', 'COLLECTION_RECOMMENDED','FIRE'].includes(alarm.type)
   );
 
+  console.log('[AlarmPage] 미해결 알람 목록:', unresolvedAlarms);
 
-    console.log('[AlarmPage] 미해결 알람 목록:', unresolvedAlarms);
-  // 알람 수락 시 실행되는 함수
   const handleAccept = async (item) => {
-    console.log("Handle Accept.......................................")
-    const { id, name, IPAddress, longitude, latitude, type, boxId} = item;
-    // 이미 수락한 경우 중복 실행 방지
-    console.log(item);
+    const { id, type, boxId } = item;
     if (acceptedIds.includes(id)) return;
 
-    // 수락된 알람 ID 저장 및 화면에서 제거
     setAcceptedIds((prev) => [...prev, id]);
-    setUnresolvedAlarms((prev) => prev.filter((a) => a.id !== id));
 
     try {
-      const token = await AsyncStorage.getItem('usertoken'); // JWT 토큰 불러오기
+      const token = await AsyncStorage.getItem('usertoken');
 
-      // 알람 타입에 따라 API 요청 전송
       if (type === 'INSTALL_REQUEST') {
         await axiosWebInstance.patch(`/employee/installInProgress/${id}`, null, {
           headers: { access: `Bearer ${token}` },
@@ -61,20 +48,28 @@ const AlarmPage = () => {
         await axiosWebInstance.patch(`/employee/removeInProgress/${id}`, null, {
           headers: { access: `Bearer ${token}` },
         });
-      }else if (type === 'COLLECTION_RECOMMENDED'){
-        await axiosWebInstance.patch(`/employee/collectionInProgress/${id}`,null , {
-          headers: {access: `Bearer ${token}`},
-        })
+      } else if (type === 'COLLECTION_RECOMMENDED') {
+        await axiosWebInstance.patch(`/employee/collectionInProgress/${id}`, null, {
+          headers: { access: `Bearer ${token}` },
+        });
+      } else if (type === 'FIRE_IN_PROGRESS') {
+        await axiosWebInstance.patch(`/employee/fireInProgress/${id}`, null, {
+          headers: { access: `Bearer ${token}` },
+        });
       }
 
-router.push({
-  pathname: '/page/boxlist',
-  params: {
-    alarmId: String(item.id),
-    boxId: String(item.boxId),
-    type: String(item.type),
-  }
-});
+      // ✅ 상태 새로고침 (setUnresolvedAlarms 제거됨)
+      await fetchAlarms();
+
+      // ✅ 수락 후 boxlist 페이지로 이동
+      router.push({
+        pathname: '/page/boxlist',
+        params: {
+          alarmId: String(id),
+          boxId: String(boxId),
+          type: String(type),
+        },
+      });
 
     } catch (error) {
       console.error('요청 수락 실패:', error);
@@ -82,18 +77,14 @@ router.push({
     }
   };
 
-
-  // 개별 알람 카드 렌더링 함수
   const renderItem = ({ item }) => {
     const isAccepted = acceptedIds.includes(item.id);
-    const label = TYPE_LABELS[item.type] || '알 수 없는 요청띠';
+    const label = TYPE_LABELS[item.type] || '알 수 없는 요청';
 
     return (
       <View style={styles.card}>
-        <Text style={styles.itemTitle}>박스 ID: {item.type}</Text>
-        <Text style={styles.itemSubTitle}>
-          요청 타입: {label}
-        </Text>
+        <Text style={styles.itemTitle}>박스 ID: {item.boxId}</Text>
+        <Text style={styles.itemSubTitle}>요청 타입: {label}</Text>
         <Text style={styles.message}>{item.message}</Text>
 
         <TouchableOpacity
@@ -111,19 +102,14 @@ router.push({
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionHeader}>미해결 알람</Text>
-        <View style={styles.listContainer}>
-          
-          <FlatList
-            
-            data={filteredAlarms} // 미해결 요청들을 보여줌
-            keyExtractor={(item) => `unresolved-${item.id}`}
-            renderItem={renderItem}
-            scrollEnabled={false}
-          />
-        </View>
-      </ScrollView>
+      <Text style={styles.sectionHeader}>미해결 알람</Text>
+      <FlatList
+        contentContainerStyle={styles.scrollContent}
+        data={filteredAlarms}
+        keyExtractor={(item) => `unresolved-${item.id}`}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 };

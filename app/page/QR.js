@@ -33,7 +33,7 @@ const QRScanner =()=> {
           style={styles.camStyle}
           facing="back"
           barcodeScannerSettings={{ barcodeTypes: "qr" }}
-          onBarcodeScanned={({ data }) => handleQRScan(data)}
+          onBarcodeScanned={({ data }) => handleQRScan(data,router)}
         />
         <View style={styles.viewfinder} />
       </View>

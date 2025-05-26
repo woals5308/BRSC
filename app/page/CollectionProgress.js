@@ -60,9 +60,10 @@ const CollectionCompleteScreen = () => {
         }
       );
 
-      //문 닫기 요청청
-      await requestBoxClose(alarmId, boxId);
-
+     const closeResult = await requestBoxClose(alarmId, boxId);
+      if (!closeResult?.success) {
+      Alert.alert('문 닫기 실패', '수거 완료는 처리되었지만 문 닫기 실패');
+        }
       // 완료 후 boxlist로 이동
       Alert.alert('완료', '수거 완료 및 문 닫기가 완료되었습니다.');
       router.replace('/page/boxlist');

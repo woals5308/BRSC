@@ -2,61 +2,72 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
 import { EventSourcePolyfill } from "event-source-polyfill";
 
-//  외부에서도 알람 상태를 업데이트할 수 있도록 전역에서 set 함수와 저장소 선언
+// 외부에서도 알람 상태를 업데이트할 수 있도록 전역 저장소 선언
 let setAlarmsExternal = null;
-let alarms = []; // 알람을 누적 저장하는 변수
+let alarms = []; // 누적 알람 리스트
 let sseRef = null; // SSE 연결 객체
 let reconnectTimeoutRef = null; // 재연결 타이머
 
-// 알람 데이터를 사용하는 컴포넌트에서 이 훅을 사용하여 알람 상태 접근
+// 알람 데이터를 사용하는 컴포넌트에서 사용하는 훅
 export const usePolyfill = () => {
   const [alarmsState, setAlarms] = useState([]);
-  setAlarmsExternal = setAlarms; // 외부에서도 setState 가능하도록 저장
-  return alarmsState; // 화면에서 사용할 알람 상태 반환
+  setAlarmsExternal = setAlarms;
+  return alarmsState;
 };
 
-//  로그인 성공 시 호출하여 알람 수신을 시작하는 함수
+// SSE 연결 시작 함수 (로그인 후 호출)
 export const connectSSE = async () => {
-  const token = await AsyncStorage.getItem("usertoken"); // 저장된 JWT 토큰 조회
-  if (!token) return; // 토큰 없으면 연결 안 함
+  const token = await AsyncStorage.getItem("usertoken");
+  if (!token) {
+    console.warn(" [SSE] 토큰 없음, 연결하지 않음");
+    return;
+  }
 
-  // 기존 SSE 연결이 있으면 먼저 닫음
+  // 기존 연결이 있다면 닫음
   if (sseRef) {
+    console.log(" [SSE] 기존 연결 종료");
     sseRef.close();
   }
 
-  // 새로운 SSE 연결 생성
-  const sse = new EventSourcePolyfill("http://192.168.0.210:8080/SSEsubscribe", {
+  console.log(" [SSE] 연결 시도 중...");
+  const sse = new EventSourcePolyfill("http://192.168.0.51:8080/SSEsubscribe", {
     headers: {
-      access: `Bearer ${token}`, // 인증 헤더 포함
+      access: `Bearer ${token}`,
     },
+    heartbeatTimeout: 86400000, // 하루종일 끊기지 않게 설정 (24시간 = 86400000ms)
   });
 
-  // 연결이 정상적으로 열렸을 때 콜백
+  // 연결 성공 시
   sse.onopen = () => {
-    // 연결 성공
+    console.log(" [SSE] 연결 성공");
   };
 
-  // 알람 이벤트 수신 시 처리
+  // 기본 메시지 수신 처리 (event: 생략된 경우 대비)
+  sse.onmessage = (event) => {
+    console.log(" [SSE] 기본 메시지 수신:", event.data);
+  };
+
+  // 'alarm' 이벤트 수신 처리
   sse.addEventListener("alarm", (event) => {
+    console.log(" [SSE] 'alarm' 이벤트 수신됨:", event.data);
     try {
-      const data = JSON.parse(event.data); // JSON 데이터 파싱
-      alarms = [data, ...alarms.filter(a => a.id !== data.id)]; // 중복 제거 후 저장
-      setAlarmsExternal?.([...alarms]); // 상태 업데이트 (컴포넌트에 반영)
+      const data = JSON.parse(event.data);
+      alarms = [data, ...alarms.filter((a) => a.id !== data.id)];
+      setAlarmsExternal?.([...alarms]);
     } catch (e) {
-      // 데이터 파싱 에러 
-      console.error("에러 발생발생",e);
-      
+      console.error(" [SSE] JSON 파싱 오류:", e);
     }
   });
 
-  // 오류 발생 시: 연결 끊기고 일정 시간 후 재연결 시도
-  sse.onerror = () => {
+  // 오류 발생 시 자동 재연결
+  sse.onerror = (err) => {
+    console.error("[SSE] 연결 오류:", err);
     if (sseRef) sseRef.close();
     sseRef = null;
 
-    // 재연결 타이머가 없다면 3초 후 다시 연결 시도
+    // 중복 재연결 방지
     if (!reconnectTimeoutRef) {
+      console.log(" [SSE] 3초 후 재연결 시도");
       reconnectTimeoutRef = setTimeout(() => {
         connectSSE();
         reconnectTimeoutRef = null;
@@ -64,5 +75,6 @@ export const connectSSE = async () => {
     }
   };
 
-  sseRef = sse; // 연결 객체 저장
+  // 연결 객체 저장
+  sseRef = sse;
 };

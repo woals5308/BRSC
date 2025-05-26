@@ -5,6 +5,7 @@ import { Alert } from "react-native";
 // 내 주변 수거함 가져오기
 export const getNearbyCollectionPoints = async (latitude, longitude) => {
   try {
+    console.log("111");
     const token = await AsyncStorage.getItem("usertoken");
 
     if (!token) {
@@ -12,15 +13,15 @@ export const getNearbyCollectionPoints = async (latitude, longitude) => {
       Alert.alert("로그인이 필요합니다.");
       return [];
     }
-
+    console.log("222");
     console.log(" 저장된 토큰:", token);
 
 
     //  헤더를 넘기지 않고 axiosInstance가 알아서 붙이게!
     const response = await axiosInstance.get(`/findAllBox`);
-
+    console.log("333");
     console.log("수거함 응답 데이터:", response.data);
-
+    console.log(token)
     //  location 파싱: WKT → 위경도
     return response.data
       .map((item) => {
@@ -41,10 +42,14 @@ export const getNearbyCollectionPoints = async (latitude, longitude) => {
     console.error(" 수거함 데이터 가져오기 실패:", error);
 
     if (error.response) {
-      console.error(" 응답 상태:", error.response.status);
-      console.error("응답 데이터:", error.response.data);
+      console.log("응답 데이터:", error.response.data);
+      console.log("응답 상태코드:", error.response.status);
+      console.log("응답 헤더:", error.response.headers);
+    } else if (error.request) {
+      console.log("요청 자체 실패:", error.request);
+    } else {
+      console.log("기타 에러:", error.message);
     }
-
     Alert.alert("데이터 로딩 실패", "서버로부터 데이터를 가져오는 데 실패했습니다.");
     return [];
   }

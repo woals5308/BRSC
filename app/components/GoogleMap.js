@@ -1,15 +1,45 @@
 import React, { useRef, useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, Modal,
-  Pressable, KeyboardAvoidingView, Platform, Alert
+  Pressable, KeyboardAvoidingView, Platform
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import useFetchLocationAndData from "../hook/userFetchLocationAndData";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-
+import { icons } from "../assets/icon/icons";
 import styles from "../style/mapstyles";
-import { useSearchBox } from "../hook/useSearchBox"; //  커스텀 훅 import
+import { useSearchBox } from "../hook/useSearchBox";
+
+const getBoxIcon = (box) => {
+  const isFire =
+    box.fireStatus1 === 'FIRE' ||
+    box.fireStatus2 === 'FIRE' ||
+    box.fireStatus3 === 'FIRE';
+
+  const isFull =
+    box.volume1 >= 85 ||
+    box.volume2 >= 85 ||
+    box.volume3 >= 85;
+
+  if (box.usageStatus === 'BLOCKED') {
+    return isFire ? icons.boxFire : null;
+  }
+
+  if (box.usageStatus === 'USED') {
+    return null; // 아이콘 없음, 모달에서 텍스트만 노출
+  }
+
+  if (box.usageStatus === 'AVAILABLE') {
+    return isFire ? icons.boxFire : (isFull ? icons.boxFull : icons.box);
+  }
+
+  return null;
+};
+const getPercentage = (usedVolume, maxVolume = 100) =>
+  Math.round((usedVolume / maxVolume) * 100);
+
+const binNames = ['건전지', '방전된 배터리', '방전되지 않은 배터리'];
 
 const Map = () => {
   const router = useRouter();
@@ -21,7 +51,7 @@ const Map = () => {
   const [bottomSheetVisible, setBottomSheetVisible] = useState(true);
   const [searchText, setSearchText] = useState('');
 
-  const { handleSearch, isSearching } = useSearchBox(mapRef); //  훅 사용
+  const { handleSearch } = useSearchBox(mapRef);
 
   const handleMarkerPress = (point) => {
     setSelectedPoint(point);
@@ -47,7 +77,6 @@ const Map = () => {
         <StatusBar translucent backgroundColor="transparent" style="light" />
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} />
 
-        {/* 검색창 */}
         <View style={styles.searchBar}>
           <TextInput
             style={styles.searchInput}
@@ -67,7 +96,6 @@ const Map = () => {
               region={currentLocation}
               showsUserLocation
             >
-              {/* 내 위치 */}
               <Marker
                 coordinate={{
                   latitude: currentLocation.latitude,
@@ -78,23 +106,24 @@ const Map = () => {
                 onPress={handleUserLocationPress}
               />
 
-              {/* 수거함 마커들 */}
-              {collectionPoints.map((point, index) => (
-                <Marker
-                  key={index}
-                  coordinate={{
-                    latitude: point.latitude,
-                    longitude: point.longitude,
-                  }}
-                  title={point.name}
-                  onPress={() => handleMarkerPress(point)}
-                />
-              ))}
+              {collectionPoints
+                .filter((box) => getBoxIcon(box))
+                .map((point, index) => (
+                  <Marker
+                    key={index}
+                    coordinate={{
+                      latitude: point.latitude,
+                      longitude: point.longitude,
+                    }}
+                    title={point.name}
+                    onPress={() => handleMarkerPress(point)}
+                    image={getBoxIcon(point)}
+                  />
+                ))}
             </MapView>
           )}
         </Pressable>
 
-        {/* 하단 바텀시트 */}
         {bottomSheetVisible && (
           <View style={styles.bottomSheet}>
             <View style={styles.dragIndicator} />
@@ -104,13 +133,9 @@ const Map = () => {
                 <Text style={styles.modalInfo}>배터리가 알려주는 안전한 배터리 이용수칙!</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.qrButton} onPress={() => router.push("/page/QR")}>
-              <Text style={styles.qrButtonText}>📷 QR 스캔하기</Text>
-            </TouchableOpacity>
           </View>
         )}
 
-        {/* 상세 모달 */}
         <Modal animationType="slide" transparent={true} visible={modalVisible}>
           <Pressable style={styles.modalBackground} onPress={closeModal}>
             <Pressable style={styles.modalContainer}>
@@ -118,19 +143,42 @@ const Map = () => {
                 <>
                   <View style={styles.infoBox}>
                     <Text style={styles.modalTitle}>{selectedPoint.name}</Text>
-                    <Text style={styles.modalInfo}>
-                      수거량 {selectedPoint.capacity ?? 0}% · 배터리 {selectedPoint.batteryCount ?? 0}개 수거 가능
-                    </Text>
+
+                    {selectedPoint.usageStatus === 'BLOCKED' &&
+                    selectedPoint.fireStatus1 !== 'FIRE' &&
+                    selectedPoint.fireStatus2 !== 'FIRE' &&
+                    selectedPoint.fireStatus3 !== 'FIRE' ? (
+                      <Text style={[styles.modalInfo, { color: 'red', fontWeight: 'bold', marginTop: 10 }]}>
+                        ⚠️ 사용 금지 상태입니다
+                      </Text>
+                    ) : (
+                      <>
+                        <Text style={styles.modalInfo}>수거함 사용률 요약:</Text>
+                        {[0, 1, 2].map((i) => {
+                          const volume = selectedPoint[`volume${i + 1}`];
+                          const percent = getPercentage(volume, 100);
+                          return (
+                            <Text
+                              key={i}
+                              style={[
+                                styles.modalInfo,
+                                percent >= 80 && { color: 'red', fontWeight: 'bold' },
+                              ]}
+                            >
+                              {binNames[i]}: {percent}%
+                            </Text>
+                          );
+                        })}
+                      </>
+                    )}
                   </View>
+
                   <View style={styles.checkboxContainer}>
                     <Text style={styles.checkboxText}>QR코드 인식에 문제가 있나요?</Text>
                     <TouchableOpacity style={styles.supportButton}>
                       <Text style={styles.supportButtonText}>고객센터</Text>
                     </TouchableOpacity>
                   </View>
-                  <TouchableOpacity style={styles.qrButton} onPress={() => router.push("/page/QR")}>
-                    <Text style={styles.qrButtonText}>📷 QR 스캔하기</Text>
-                  </TouchableOpacity>
                 </>
               ) : (
                 <Text style={styles.errorText}>수거함 정보를 가져올 수 없습니다.</Text>

@@ -1,14 +1,18 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Modal, Animated, TouchableWithoutFeedback } from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  Animated,
+  TouchableWithoutFeedback,
+  ScrollView,
+} from 'react-native';
 import styles from '../style/alarmstyles';
-import { usePolyfill } from '../hook/usePolyfill';  //기존의 쓰던 3번째 줄 지우고 이걸로 가져오면됨
+// ❌ usePolyfill 제거
 
-const NotificationTab = ({ visible, onClose }) => {
-  const alarms = usePolyfill(); //여기 부분을 useSSEAlarms 부분을 usePolyfill로 바꾸면됨됨
-  const latestMessage = (alarms && alarms.length > 0 ) ? alarms[0].message : '알림이 없습니다.';
+const NotificationTab = ({ visible, onClose, alarms }) => {
   const translateX = useRef(new Animated.Value(300)).current;
 
-  // 슬라이딩 애니메이션
   useEffect(() => {
     Animated.spring(translateX, {
       toValue: visible ? 0 : 300,
@@ -21,12 +25,16 @@ const NotificationTab = ({ visible, onClose }) => {
     onClose();
   };
 
+  useEffect(() => {
+    console.log('[NotificationTab] alarms state:', alarms);
+  }, [alarms]);
+
+  const formatAlarmMessage = (alarm) => {
+    return `📢 [${alarm.type}] 요청\n박스 ID: ${alarm.boxId}\n요청자: ${alarm.userId}\n날짜: ${new Date(alarm.date).toLocaleString()}`;
+  };
+
   return (
-    <Modal
-      transparent
-      visible={visible}
-      onRequestClose={onClose}
-    >
+    <Modal transparent visible={visible} onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={handleOutsidePress}>
         <View style={styles.overlay}>
           <Animated.View style={[styles.tab, { transform: [{ translateX }] }]}>
@@ -34,11 +42,19 @@ const NotificationTab = ({ visible, onClose }) => {
               <Text style={styles.tabTitle}>실시간 알림</Text>
             </View>
 
-            <View style={styles.notificationContent}>
-              <Text style={styles.message}>
-                {latestMessage}
-              </Text>
-            </View>
+            <ScrollView style={styles.notificationContent}>
+              {alarms && alarms.length > 0 ? (
+                alarms.map((alarm, index) => (
+                  <View key={index} style={styles.messageBox}>
+                    <Text style={styles.message}>
+                      {formatAlarmMessage(alarm)}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.message}>알림이 없습니다.</Text>
+              )}
+            </ScrollView>
           </Animated.View>
         </View>
       </TouchableWithoutFeedback>

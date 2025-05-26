@@ -1,13 +1,6 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#222",
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    alignItems: "center",
-  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -51,7 +44,27 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: "center",
   },
-  
+label: {
+  fontSize: 14,
+  fontWeight: "bold",
+  marginTop: 10,
+  marginBottom: 5,
+  color: "#fff",
+},
+picker: {
+  height: 50,
+  backgroundColor: '#f0f0f0',
+  marginVertical: 10,
+  borderRadius: 8,
+},
+container: {
+  flex: 1,
+  backgroundColor: "#222",
+  paddingHorizontal: 20,
+  paddingTop: 50,
+  alignItems: "center",
+  paddingBottom: 100, // ✅ 추가
+},
 });
 
 export default styles

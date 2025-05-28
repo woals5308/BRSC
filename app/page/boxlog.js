@@ -169,6 +169,7 @@ const BoxLogPage = () => {
                     )}
                     <View style={styles.cardText}>
                       <Text style={styles.cardType}>수거 총 합계 : {total}개</Text>
+                      <Text style={styles.cardReward}>보상: {item.boxLog?.value ?? 0}원</Text>
                       <Text style={styles.cardSub}>{readable}</Text>
                       <Text style={styles.cardDate}>{formatDateTime(date)}</Text>
                     </View>

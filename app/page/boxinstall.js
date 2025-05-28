@@ -15,7 +15,7 @@ const BoxInstallPage = () => {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
   const router = useRouter();
-
+  console.log(alarmId);
   useEffect(() => {
     if (alarmId && unresolvedAlarms.length > 0) {
       const found = unresolvedAlarms.find(a => String(a.id) === String(alarmId));

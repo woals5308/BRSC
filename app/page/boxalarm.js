@@ -13,20 +13,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm'; // ✅ fetchAlarms 지원 훅
 import axiosWebInstance from '../api/axiosweb';
 import styles from '../style/boxalarmstyles';
+import BottomNavigation from '../components/BottomNavigation';
 
-const TYPE_LABELS = {
+
+
+const TYPE_LABELS = { 
   INSTALL_REQUEST: '설치 요청',
   REMOVE_REQUEST: '제거 요청',
   COLLECTION_RECOMMENDED: '수거 권장',
+  COLLECTION_NEEDED : '수거 필요',
   FIRE : '화재 발생',
 };
 
 const AlarmPage = () => {
-  const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms(); // ✅ fetchAlarms 추가
+  const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms(); //  fetchAlarms 추가
   const [acceptedIds, setAcceptedIds] = useState([]);
   const router = useRouter();
   const filteredAlarms = unresolvedAlarms.filter(alarm =>
-    ['INSTALL_REQUEST', 'REMOVE_REQUEST', 'COLLECTION_RECOMMENDED','FIRE'].includes(alarm.type)
+    ['INSTALL_REQUEST', 'REMOVE_REQUEST', 'COLLECTION_RECOMMENDED','FIRE','COLLECTION_NEEDED'].includes(alarm.type)
   );
 
   console.log('[AlarmPage] 미해결 알람 목록:', unresolvedAlarms);
@@ -41,9 +45,11 @@ const AlarmPage = () => {
       const token = await AsyncStorage.getItem('usertoken');
 
       if (type === 'INSTALL_REQUEST') {
+        console.log("1232333333333333333333333333333333");
         await axiosWebInstance.patch(`/employee/installInProgress/${id}`, null, {
           headers: { access: `Bearer ${token}` },
         });
+        console.log("~~~~~~~~~~~~~~~~~~~~~~!!@!@!@!@@!");
       } else if (type === 'REMOVE_REQUEST') {
         await axiosWebInstance.patch(`/employee/removeInProgress/${id}`, null, {
           headers: { access: `Bearer ${token}` },
@@ -52,16 +58,24 @@ const AlarmPage = () => {
         await axiosWebInstance.patch(`/employee/collectionInProgress/${id}`, null, {
           headers: { access: `Bearer ${token}` },
         });
-      } else if (type === 'FIRE_IN_PROGRESS') {
+      } else if (type === 'FIRE') {
         await axiosWebInstance.patch(`/employee/fireInProgress/${id}`, null, {
           headers: { access: `Bearer ${token}` },
         });
+      }else if (type === 'COLLECTION_NEEDED') {
+        await axiosWebInstance.patch(`/employee/collectionInProgress/${id}`, null, {
+          headers: { access: `Bearer ${token}` },
+        });
       }
+      console.log("!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
-      // ✅ 상태 새로고침 (setUnresolvedAlarms 제거됨)
+
+
+
+      //  상태 새로고침 (setUnresolvedAlarms 제거됨)
       await fetchAlarms();
-
-      // ✅ 수락 후 boxlist 페이지로 이동
+      console.log("??????????????????????????????????????????????????????????????????????");
+      //  수락 후 boxlist 페이지로 이동
       router.push({
         pathname: '/page/boxlist',
         params: {
@@ -69,8 +83,10 @@ const AlarmPage = () => {
           boxId: String(boxId),
           type: String(type),
         },
+        
       });
-
+      console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      console.log(String(id));
     } catch (error) {
       console.error('요청 수락 실패:', error);
       Alert.alert('오류', '요청 처리 중 문제가 발생했습니다.');
@@ -110,7 +126,9 @@ const AlarmPage = () => {
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
+      <BottomNavigation/>
     </SafeAreaView>
+    
   );
 };
 

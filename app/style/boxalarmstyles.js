@@ -11,16 +11,17 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 30,
+    paddingBottom: 100, // 하단 버튼 여유 공간 확보
   },
   sectionHeader: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 10,
     marginTop: 20,
+    textAlign: "center",
   },
   listContainer: {
-    maxHeight: height * 0.4,  // 리스트 박스 크기
+    maxHeight: height * 0.4,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,

@@ -44,14 +44,11 @@ const MyInfoPage = () => {
             <Text style={styles.name}>{userInfo?.name || '이름 없음'}</Text>
             <Text style={styles.email}>{userInfo?.id || '아이디 없음'}</Text>
           </View>
-          <TouchableOpacity>
-            <Text style={styles.edit}>수정하기 &gt;</Text>
-          </TouchableOpacity>
         </View>
 
         {/* 항목 목록 */}
         {[
-          { label: '개인정보', action: '수정하기' },
+          { label: '개인정보'},
           { label: '공지사항' },
           { label: '고객센터' },
           { label: '약관 및 정책' },

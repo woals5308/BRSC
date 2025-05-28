@@ -9,20 +9,19 @@ import {
   Switch,
 } from "react-native";
 import { CameraView } from "expo-camera";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { handleQRScanWithValidation } from "../api/cameraApi";
 import styles from "../style/QRstyles";
 import { useUnresolvedAlarms } from "../hook/useUnresolveAlarm";
+import { useLocalSearchParams } from "expo-router";
 
 const QRScanner = () => {
   const router = useRouter();
   const [flashlight, setFlashlight] = useState(false);
   const [scanned, setScanned] = useState(false);
   const [unresolvedAlarms] = useUnresolvedAlarms();
-  const {alarmId} = useLocalSearchParams();
-
-  console.log(alarmId);
-
+    const {alarmId} = useLocalSearchParams();
+    console.log(alarmId);
   return (
     <SafeAreaView style={styles.container}>
       {Platform.OS === "android" && (
@@ -43,7 +42,7 @@ const QRScanner = () => {
 
               if (!scanned && typeof result?.data === "string") {
                 setScanned(true);
-                handleQRScanWithValidation(result.data,router, alarmId, unresolvedAlarms);
+                handleQRScanWithValidation(result.data, router, unresolvedAlarms);
               }
             }}
         />

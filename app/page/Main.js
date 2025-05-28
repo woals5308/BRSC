@@ -64,7 +64,7 @@ const MainPage = () => {
       <View style={styles.helpSection}>
         <Text style={styles.sectionTitle}>도움말</Text>
         <View style={styles.helpBoxContainer}>
-          <TouchableOpacity style={styles.helpBox} onPress={() => router.push("/UsageGuide")}>
+          <TouchableOpacity style={styles.helpBox} onPress={() => router.push("/page/usedetail")}>
             <Text style={styles.helpTitle}>수거함 이용방법</Text>
             <Text style={styles.helpText}>화재걱정 없는 배터리 배출의 시작</Text>
           </TouchableOpacity>

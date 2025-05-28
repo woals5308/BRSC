@@ -5,4 +5,6 @@ export const icons={
     box: require('./boxIcon.png'),  
     boxFull: require('./full.png'),         // 가득찬 수거함
     boxFire: require('./fire.png'),         // 화재 발생 수거함
+    boxMiddle : require('./boxmiddle.png'), // 수거함 중간간
 }
+

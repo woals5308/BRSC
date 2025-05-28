@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosWebInstance from '../api/axiosweb';
 import styles from '../style/boxalarmstyles';
 import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm';
+import BottomNavigation from '../components/BottomNavigation';
 
 const BoxListPage = () => {
   const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms(); //  fetchAlarms 추가
@@ -19,9 +20,9 @@ const BoxListPage = () => {
   const [completedMap, setCompletedMap] = useState({});
   const [finalizedMap, setFinalizedMap] = useState({});
   const router = useRouter();
-  const {alarmId ,boxId, type } = useLocalSearchParams();
+  const {alarmId,boxId,type} = useLocalSearchParams();
 
-  console.log(alarmId,boxId);
+  console.log(alarmId,boxId,type);
   useEffect(() => {
     const filtered = unresolvedAlarms.filter(alarm =>
       [
@@ -32,7 +33,7 @@ const BoxListPage = () => {
         'REMOVE_CONFIRMED',
         'COLLECTION_CONFIRMED',
         'FIRE_IN_PROGRESS',
-        'FIRE_COMPLETED',
+        'FIRE_CONFIRMED',
         
       ].includes(alarm.type)
     );
@@ -55,7 +56,7 @@ const BoxListPage = () => {
     switch (type) {
       case 'INSTALL_CONFIRMED': return `/employee/installEnd/${alarmId}`;
       case 'REMOVE_CONFIRMED': return `/employee/removeEnd/${alarmId}`;
-      case 'COLLECTION_CONFIRMED': return `/employee/collectionEnd/${alarmId}`;
+      case 'COLLECTION_CONFIRMED': return `/employee/collectioneEnd/${alarmId}`;
       case 'FIRE_CONFIRMED' : return `/employee/fireEnd/${alarmId}`;
       default: return null;
     }
@@ -111,6 +112,7 @@ const BoxListPage = () => {
       case 'COLLECTION_CONFIRMED': return '수거 최종 확인';
       case 'FIRE_IN_PROGRESS': return '화재 처리 중';
       case 'FIRE_COMPLETED': return '화재 처리 완료';
+      case 'FIRE_CONFIRMED' : return '화재 최종 완료';
       default: return '알 수 없는 요청';
     }
   };
@@ -177,6 +179,7 @@ const BoxListPage = () => {
           </View>
         ))}
       </ScrollView>
+      <BottomNavigation/>
     </SafeAreaView>
   );
 };

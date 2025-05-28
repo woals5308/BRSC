@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, Modal,
   Pressable, KeyboardAvoidingView, Platform, Image
@@ -12,7 +12,6 @@ import styles from "../style/mapstyles";
 import { useSearchBox } from "../hook/useSearchBox";
 import useSecuredImage from "../hook/useBoxImage";
 
-
 const getBoxIcon = (box) => {
   const isFire =
     box.fireStatus1 === 'FIRE' ||
@@ -20,9 +19,9 @@ const getBoxIcon = (box) => {
     box.fireStatus3 === 'FIRE';
 
   const isFull =
-    box.volume1 >= 85 ||
-    box.volume2 >= 85 ||
-    box.volume3 >= 85;
+    box.volume1 >= 81 ||
+    box.volume2 >= 81 ||
+    box.volume3 >= 81;
 
   if (box.usageStatus === 'BLOCKED') {
     return isFire ? icons.boxFire : null;
@@ -46,15 +45,23 @@ const binNames = ['건전지', '방전된 배터리', '방전되지 않은 배�
 
 const Map = () => {
   const router = useRouter();
-  const { currentLocation, collectionPoints } = useFetchLocationAndData();
+  const { currentLocation, collectionPoints, fetchCollectionData } = useFetchLocationAndData();
   const mapRef = useRef(null);
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [bottomSheetVisible, setBottomSheetVisible] = useState(true);
   const [searchText, setSearchText] = useState('');
   const imageUri = useSecuredImage(`/boxImage/${selectedPoint?.id}`);
-
   const { handleSearch } = useSearchBox(mapRef);
+
+  //  3초마다 수거함 정보 갱신
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchCollectionData();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [fetchCollectionData]);
 
   const handleMarkerPress = (point) => {
     setSelectedPoint(point);
@@ -72,10 +79,7 @@ const Map = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={styles.container}>
         <StatusBar translucent backgroundColor="transparent" style="light" />
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} />
@@ -111,9 +115,9 @@ const Map = () => {
 
               {collectionPoints
                 .filter((box) => getBoxIcon(box))
-                .map((point, index) => (
+                .map((point) => (
                   <Marker
-                    key={index}
+                    key={`${point.id}-${point.fireStatus1}-${point.volume1}-${point.volume2}-${point.volume3}`}
                     coordinate={{
                       latitude: point.latitude,
                       longitude: point.longitude,
@@ -122,7 +126,7 @@ const Map = () => {
                     onPress={() => handleMarkerPress(point)}
                     image={getBoxIcon(point)}
                   />
-                ))}
+              ))}
             </MapView>
           )}
         </Pressable>
@@ -156,7 +160,6 @@ const Map = () => {
                       </Text>
                     ) : (
                       <View style={{ flexDirection: 'row', marginTop: 10 }}>
-                        {/* 왼쪽: 텍스트 */}
                         <View style={{ flex: 1 }}>
                           <Text style={styles.modalInfo}>수거함 사용률 요약:</Text>
                           {[0, 1, 2].map((i) => {
@@ -176,28 +179,26 @@ const Map = () => {
                           })}
                         </View>
 
-                              {/* 오른쪽: 이미지 */}
-                              {imageUri ? (
-                                <Image
-                                  source={{ uri: imageUri }}
-                                  style={{
-                                    width: 100,
-                                    height: 100,
-                                    borderRadius: 10,
-                                    borderWidth: 1,
-                                    borderColor: '#ccc',
-                                    marginLeft: 10,
-                                    alignSelf: 'center',
-                                  }}
-                                />
-                              ) : (
-                                <Text style={{ marginLeft: 10, color: '#aaa' }}>이미지를 불러오는 중...</Text>
-                              )}
+                        {imageUri ? (
+                          <Image
+                            source={{ uri: imageUri }}
+                            style={{
+                              width: 100,
+                              height: 100,
+                              borderRadius: 10,
+                              borderWidth: 1,
+                              borderColor: '#ccc',
+                              marginLeft: 10,
+                              alignSelf: 'center',
+                            }}
+                          />
+                        ) : (
+                          <Text style={{ marginLeft: 10, color: '#aaa' }}>이미지를 불러오는 중...</Text>
+                        )}
                       </View>
                     )}
                   </View>
 
-                  {/* 고객센터 영역 */}
                   <View style={styles.checkboxContainer}>
                     <Text style={styles.checkboxText}>QR코드 인식에 문제가 있나요?</Text>
                     <TouchableOpacity style={styles.supportButton}>

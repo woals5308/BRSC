@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,27 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axiosWebInstance from '../api/axiosweb'; // 웹 백엔드용 axios 인스턴스
-import { requestBoxClose } from '../api/cameraApi'; // 문 닫기 API 호출
+import axiosWebInstance from '../api/axiosweb';
+import { requestBoxClose } from '../api/cameraApi';
 import styles from '../style/QRstyles';
+import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm';
 
 const CollectionCompleteScreen = () => {
-  const { alarmId, boxId } = useLocalSearchParams(); // QR로 전달받은 알람 ID, 박스 ID
+  const { alarmId, boxId} = useLocalSearchParams();
+  const [unresolvedAlarms] = useUnresolvedAlarms();
+  const [alarm, setAlarm] = useState(null);
   const [image, setImage] = useState(null);
   const router = useRouter();
 
-  //  수거 완료 사진 촬영
+  useEffect(() => {
+    if (unresolvedAlarms.length > 0) {
+      const found = unresolvedAlarms.find(
+        (a) => String(a.id)
+      );
+      setAlarm(found);
+    }
+  }, [unresolvedAlarms]);
+
   const handleTakePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
@@ -31,24 +42,27 @@ const CollectionCompleteScreen = () => {
     }
   };
 
-  //  수거 완료 처리 (사진 업로드 + 문 닫기)
   const handleSubmit = async () => {
     if (!image) {
       Alert.alert('오류', '사진을 먼저 촬영해주세요.');
       return;
     }
 
+    if (!alarm || !alarm.id || !alarm.boxId) {
+      Alert.alert('오류', '알람 정보를 불러오지 못했습니다.');
+      return;
+    }
+
     try {
       const token = await AsyncStorage.getItem('usertoken');
 
-      //  웹에 수거 완료 사진 업로드
       const formData = new FormData();
       formData.append('file', {
         uri: image.uri,
         type: 'image/jpeg',
         name: 'collection.jpg',
       });
-
+  
       await axiosWebInstance.patch(
         `/employee/collectionCompleted/${alarmId}`,
         formData,
@@ -60,30 +74,42 @@ const CollectionCompleteScreen = () => {
         }
       );
 
-     const closeResult = await requestBoxClose(alarmId, boxId);
-      if (!closeResult?.success) {
-      Alert.alert('문 닫기 실패', '수거 완료는 처리되었지만 문 닫기 실패');
-        }
-      // 완료 후 boxlist로 이동
-      Alert.alert('완료', '수거 완료 및 문 닫기가 완료되었습니다.');
-      router.replace('/page/boxlist');
+      // const closeResult = await requestBoxClose(alarm.boxId);
+      
+      // if (!closeResult?.success) {
+      //   console.log("~!~!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+      //   console.log(closeResult);
+      //   Alert.alert(
+      //     '주의',
+      //     '수거 사진은 전송되었지만 수거함 문 닫기에는 실패했습니다.\n다시 시도하거나 관리자에게 문의해주세요.'
+      //   );
+      // } else {
+      //   Alert.alert('완료', '수거 완료 및 문 닫기가 완료되었습니다.');
+      // }
 
+      router.push('/page/boxlist');
     } catch (error) {
       console.error('수거 완료 실패:', error);
       Alert.alert('오류', '수거 완료 처리 중 문제가 발생했습니다.');
     }
   };
 
+  if (!alarm) {
+    return (
+      <View style={styles.container}>
+        <Text>알람 정보를 불러오는 중입니다...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionHeader}>수거 완료 사진 전송</Text>
 
-      {/* 사진 촬영 버튼 */}
       <TouchableOpacity style={styles.acceptButton} onPress={handleTakePhoto}>
         <Text style={styles.acceptText}>사진 촬영</Text>
       </TouchableOpacity>
 
-      {/* 촬영된 사진 미리보기 */}
       {image && (
         <Image
           source={{ uri: image.uri }}
@@ -91,7 +117,6 @@ const CollectionCompleteScreen = () => {
         />
       )}
 
-      {/* 수거 완료 전송 버튼 */}
       <TouchableOpacity
         style={[styles.acceptButton, { marginTop: 30 }]}
         onPress={handleSubmit}

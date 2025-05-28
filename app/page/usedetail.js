@@ -50,7 +50,7 @@ const UsageGuide = () => {
 
             {/* 마지막 페이지에만 버튼 추가 */}
             {index === pages.length - 1 && (
-              <TouchableOpacity style={styles.finalButton} onPress={() => router.push("/components/GoogleMap")}>
+              <TouchableOpacity style={styles.finalButton} onPress={() => router.push("/page/Main")}>
                 <Text style={styles.finalButtonText}>자 이제 배터리를 이용하러 가볼까요?</Text>
               </TouchableOpacity>
             )}

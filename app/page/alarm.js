@@ -8,7 +8,14 @@ import {
   ScrollView,
 } from 'react-native';
 import styles from '../style/alarmstyles';
-// ❌ usePolyfill 제거
+const TYPE_LABELS = {
+  INSTALL_REQUEST: '설치 요청',
+  REMOVE_REQUEST: '제거 요청',
+  COLLECTION_RECOMMENDED: '수거 권장',
+  FIRE: '화재 발생',
+};
+
+
 
 const NotificationTab = ({ visible, onClose, alarms }) => {
   const translateX = useRef(new Animated.Value(300)).current;
@@ -30,7 +37,8 @@ const NotificationTab = ({ visible, onClose, alarms }) => {
   }, [alarms]);
 
   const formatAlarmMessage = (alarm) => {
-    return `📢 [${alarm.type}] 요청\n박스 ID: ${alarm.boxId}\n요청자: ${alarm.userId}\n날짜: ${new Date(alarm.date).toLocaleString()}`;
+    const typeLabel = TYPE_LABELS[alarm.type] || alarm.type;
+    return `[${typeLabel}] \n박스 ID: ${alarm.boxId}\n요청자: ${alarm.userId}\n날짜: ${new Date(alarm.date).toLocaleString()}`;
   };
 
   return (

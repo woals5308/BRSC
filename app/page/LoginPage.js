@@ -45,7 +45,7 @@ const Login = () => {
       const loginSuccess = await login(id, password);
       if (loginSuccess) {
         await connectSSE();
-        router.push("/page/NickName");
+        router.push("/page/NickNameNext");
       } else {
         alert("로그인 실패");
       }

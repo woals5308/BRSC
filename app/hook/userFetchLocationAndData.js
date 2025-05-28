@@ -1,33 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as Location from "expo-location";
 import { Alert } from "react-native";
-import { getNearbyCollectionPoints } from "../api/aroundboxApi"; //  API 불러오기
+import { getNearbyCollectionPoints } from "../api/aroundboxApi"; // API 불러오기
 
 const useFetchLocationAndData = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [collectionPoints, setCollectionPoints] = useState([]);
-  console.log("1");
+
+  // 🔁 수거함 정보만 새로 갱신하는 함수
+  const fetchCollectionData = useCallback(async () => {
+    try {
+      if (!currentLocation) return;
+      const { latitude, longitude } = currentLocation;
+      const points = await getNearbyCollectionPoints(latitude, longitude);
+      setCollectionPoints(points);
+    } catch (error) {
+      console.error("수거함 정보 갱신 실패:", error);
+    }
+  }, [currentLocation]);
+
+  // 🔰 최초 위치 + 수거함 정보 가져오기
   useEffect(() => {
     const fetchLocationAndData = async () => {
       try {
-        console.log("2");
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           Alert.alert("위치 권한이 필요합니다.");
           return;
         }
-        console.log("3");
+
         const location = await Location.getCurrentPositionAsync({});
         const { latitude, longitude } = location.coords;
 
-        setCurrentLocation({
+        const region = {
           latitude,
           longitude,
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
-        });
+        };
 
-        //  API를 호출하여 수거함 데이터 가져오기
+        setCurrentLocation(region);
+
         const points = await getNearbyCollectionPoints(latitude, longitude);
         setCollectionPoints(points);
       } catch (error) {
@@ -39,7 +52,7 @@ const useFetchLocationAndData = () => {
     fetchLocationAndData();
   }, []);
 
-  return { currentLocation, collectionPoints };
+  return { currentLocation, collectionPoints, fetchCollectionData };
 };
 
 export default useFetchLocationAndData;

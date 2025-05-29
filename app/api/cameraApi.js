@@ -84,25 +84,25 @@ export const handleQRScanWithValidation = async (data,router, alarmId, unresolve
 /**
  * 문 닫기 요청
  */
-export const requestBoxClose = async (boxId) => {
-  const token = await AsyncStorage.getItem("usertoken");
-  const CLOSE_ALL_DOORS = 0;
+// export const requestBoxClose = async (boxId) => {
+//   const token = await AsyncStorage.getItem("usertoken");
+//   const CLOSE_ALL_DOORS = 0;
 
-  try {
-    const response = await axiosInstance.get(
-      `/employee/boxClose/${boxId}/${CLOSE_ALL_DOORS}`,
-      {
-        headers: { access: `Bearer ${token}` },
-      }
-    );
-    console.log(response);
-    return response.data;
+//   try {
+//     const response = await axiosInstance.get(
+//       `/employee/boxClose/${boxId}/${CLOSE_ALL_DOORS}`,
+//       {
+//         headers: { access: `Bearer ${token}` },
+//       }
+//     );
+//     console.log(response);
+//     return response.data;
       
-  } catch (error) {
-    console.error("문 닫기 실패:", error?.response?.data || error.message);
-    return {
-      success: false,
-      error: error?.response?.data || error.message,
-    };
-  }
-};
+//   } catch (error) {
+//     console.error("문 닫기 실패:", error?.response?.data || error.message);
+//     return {
+//       success: false,
+//       error: error?.response?.data || error.message,
+//     };
+//   }
+// };

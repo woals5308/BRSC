@@ -8,16 +8,24 @@ import {
   ScrollView,
 } from 'react-native';
 import styles from '../style/alarmstyles';
+import { useAlarm } from '../context/AlarmContext'; // ✅ 알람 상태 가져오기
+
 const TYPE_LABELS = {
   INSTALL_REQUEST: '설치 요청',
   REMOVE_REQUEST: '제거 요청',
   COLLECTION_RECOMMENDED: '수거 권장',
   FIRE: '화재 발생',
+  INSTALL_CONFIRMED : '설치 완료',
+  REMOVE_CONFIRMED : '제거 완료',
+  COLLECTION_CONFIRMED : '수거 완료',
+  FIRE_CONFIRMED : '화재 처리 완료',
+
+
+
 };
 
-
-
-const NotificationTab = ({ visible, onClose, alarms }) => {
+const NotificationTab = ({ visible, onClose }) => {
+  const { alarmList } = useAlarm(); // ✅ 전역 알림 상태 사용
   const translateX = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
@@ -33,8 +41,8 @@ const NotificationTab = ({ visible, onClose, alarms }) => {
   };
 
   useEffect(() => {
-    console.log('[NotificationTab] alarms state:', alarms);
-  }, [alarms]);
+    console.log('[NotificationTab] alarms state:', alarmList);
+  }, [alarmList]);
 
   const formatAlarmMessage = (alarm) => {
     const typeLabel = TYPE_LABELS[alarm.type] || alarm.type;
@@ -51,8 +59,8 @@ const NotificationTab = ({ visible, onClose, alarms }) => {
             </View>
 
             <ScrollView style={styles.notificationContent}>
-              {alarms && alarms.length > 0 ? (
-                alarms.map((alarm, index) => (
+              {alarmList && alarmList.length > 0 ? (
+                alarmList.map((alarm, index) => (
                   <View key={index} style={styles.messageBox}>
                     <Text style={styles.message}>
                       {formatAlarmMessage(alarm)}

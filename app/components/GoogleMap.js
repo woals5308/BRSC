@@ -18,10 +18,10 @@ const getBoxIcon = (box) => {
     box.fireStatus2 === 'FIRE' ||
     box.fireStatus3 === 'FIRE';
 
-  const isFull =
-    box.volume1 >= 81 ||
-    box.volume2 >= 81 ||
-    box.volume3 >= 81;
+  const volumes = [box.volume1, box.volume2, box.volume3];
+
+  const hasFull = volumes.some(v => v >= 81);
+  const hasWarning = volumes.some(v => v >= 51);
 
   if (box.usageStatus === 'BLOCKED') {
     return isFire ? icons.boxFire : null;
@@ -32,11 +32,15 @@ const getBoxIcon = (box) => {
   }
 
   if (box.usageStatus === 'AVAILABLE') {
-    return isFire ? icons.boxFire : (isFull ? icons.boxFull : icons.box);
+    if (isFire) return icons.boxFire;
+    if (hasFull) return icons.boxFull;
+    if (hasWarning) return icons.boxMiddle;
+    return icons.box;
   }
 
   return null;
 };
+
 
 const getPercentage = (usedVolume, maxVolume = 100) =>
   Math.round((usedVolume / maxVolume) * 100);

@@ -5,17 +5,16 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosWebInstance from '../api/axiosweb';
-import { requestBoxClose } from '../api/cameraApi';
-import styles from '../style/QRstyles';
 import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm';
 
 const CollectionCompleteScreen = () => {
-  const { alarmId, boxId} = useLocalSearchParams();
+  const { alarmId, boxId } = useLocalSearchParams();
   const [unresolvedAlarms] = useUnresolvedAlarms();
   const [alarm, setAlarm] = useState(null);
   const [image, setImage] = useState(null);
@@ -23,9 +22,7 @@ const CollectionCompleteScreen = () => {
 
   useEffect(() => {
     if (unresolvedAlarms.length > 0) {
-      const found = unresolvedAlarms.find(
-        (a) => String(a.id)
-      );
+      const found = unresolvedAlarms.find((a) => String(a.id) === String(alarmId));
       setAlarm(found);
     }
   }, [unresolvedAlarms]);
@@ -62,7 +59,7 @@ const CollectionCompleteScreen = () => {
         type: 'image/jpeg',
         name: 'collection.jpg',
       });
-  
+
       await axiosWebInstance.patch(
         `/employee/collectionCompleted/${alarmId}`,
         formData,
@@ -73,20 +70,9 @@ const CollectionCompleteScreen = () => {
           },
         }
       );
+      console.log("서버 응답 데이터임:", response.data);
 
-      // const closeResult = await requestBoxClose(alarm.boxId);
-      
-      // if (!closeResult?.success) {
-      //   console.log("~!~!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-      //   console.log(closeResult);
-      //   Alert.alert(
-      //     '주의',
-      //     '수거 사진은 전송되었지만 수거함 문 닫기에는 실패했습니다.\n다시 시도하거나 관리자에게 문의해주세요.'
-      //   );
-      // } else {
-      //   Alert.alert('완료', '수거 완료 및 문 닫기가 완료되었습니다.');
-      // }
-
+      Alert.alert('성공', '수거 완료 사진이 전송되었습니다.');
       router.push('/page/boxlist');
     } catch (error) {
       console.error('수거 완료 실패:', error);
@@ -97,34 +83,74 @@ const CollectionCompleteScreen = () => {
   if (!alarm) {
     return (
       <View style={styles.container}>
-        <Text>알람 정보를 불러오는 중입니다...</Text>
+        <Text style={styles.loadingText}>알람 정보를 불러오는 중입니다...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionHeader}>수거 완료 사진 전송</Text>
+      <Text style={styles.title}> 수거 완료 사진 전송</Text>
 
-      <TouchableOpacity style={styles.acceptButton} onPress={handleTakePhoto}>
-        <Text style={styles.acceptText}>사진 촬영</Text>
+      <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
+        <Text style={styles.buttonText}>사진 촬영하기</Text>
       </TouchableOpacity>
 
       {image && (
         <Image
           source={{ uri: image.uri }}
-          style={{ width: 300, height: 200, marginTop: 20 }}
+          style={styles.preview}
+          resizeMode="cover"
         />
       )}
 
       <TouchableOpacity
-        style={[styles.acceptButton, { marginTop: 30 }]}
+        style={[styles.button, { backgroundColor: '#4CAF50', marginTop: 30 }]}
         onPress={handleSubmit}
       >
-        <Text style={styles.acceptText}>수거 완료</Text>
+        <Text style={styles.buttonText}> 수거 완료</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 export default CollectionCompleteScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  title: {
+    color: '#black',
+    fontSize: 20,
+    marginBottom: 20,
+    fontWeight: 'bold',
+  },
+  button: {
+    backgroundColor: '#008CBA',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  preview: {
+    width: 300,
+    height: 200,
+    marginTop: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  loadingText: {
+    color: '#black',
+    fontSize: 16,
+  },
+});

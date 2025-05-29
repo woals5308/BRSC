@@ -1,85 +1,155 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  SafeAreaView,
-  StatusBar,
-  Platform,
+  Image,
   TouchableOpacity,
-  Switch,
-} from "react-native";
-import { CameraView } from "expo-camera";
-import { useRouter } from "expo-router";
-import { handleQRScanWithValidation } from "../api/cameraApi";
-import styles from "../style/QRstyles";
-import { useUnresolvedAlarms } from "../hook/useUnresolveAlarm";
-import { useLocalSearchParams } from "expo-router";
+  Alert,
+  StyleSheet,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axiosWebInstance from '../api/axiosweb';
+import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm';
 
-const QRScanner = () => {
-  const router = useRouter();
-  const [flashlight, setFlashlight] = useState(false);
-  const [scanned, setScanned] = useState(false);
+const CollectionCompleteScreen = () => {
+  const { alarmId, boxId } = useLocalSearchParams();
   const [unresolvedAlarms] = useUnresolvedAlarms();
-    const {alarmId} = useLocalSearchParams();
-    console.log(alarmId);
+  const [alarm, setAlarm] = useState(null);
+  const [image, setImage] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (unresolvedAlarms.length > 0) {
+      const found = unresolvedAlarms.find((a) => String(a.id) === String(alarmId));
+      setAlarm(found);
+    }
+  }, [unresolvedAlarms]);
+
+  const handleTakePhoto = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!image) {
+      Alert.alert('오류', '사진을 먼저 촬영해주세요.');
+      return;
+    }
+
+    if (!alarm || !alarm.id || !alarm.boxId) {
+      Alert.alert('오류', '알람 정보를 불러오지 못했습니다.');
+      return;
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('usertoken');
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri: image.uri,
+        type: 'image/jpeg',
+        name: 'collection.jpg',
+      });
+
+      await axiosWebInstance.patch(
+        `/employee/collectionCompleted/${alarmId}`,
+        formData,
+        {
+          headers: {
+            access: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      Alert.alert('성공', '수거 완료 사진이 전송되었습니다.');
+      router.push('/page/boxlist');
+    } catch (error) {
+      console.error('수거 완료 실패:', error);
+      Alert.alert('오류', '수거 완료 처리 중 문제가 발생했습니다.');
+    }
+  };
+
+  if (!alarm) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loadingText}>알람 정보를 불러오는 중입니다...</Text>
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
-      {Platform.OS === "android" && (
-        <StatusBar backgroundColor="#444" barStyle="light-content" />
+    <View style={styles.container}>
+      <Text style={styles.title}> 수거 완료 사진 전송</Text>
+
+      <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
+        <Text style={styles.buttonText}>사진 촬영하기</Text>
+      </TouchableOpacity>
+
+      {image && (
+        <Image
+          source={{ uri: image.uri }}
+          style={styles.preview}
+          resizeMode="cover"
+        />
       )}
 
-      <Text style={styles.instructions}>
-        수거함에 부착된 QR코드를{"\n"}사각형 테두리에 맞춰 인식해주세요
-      </Text>
-
-      <View style={styles.cameraContainer}>
-        <CameraView
-          style={styles.camStyle}
-          facing="back"
-          barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-                    onBarcodeScanned={(result) => {
-              console.log("📸 QR 스캔 결과:", result);
-
-              if (!scanned && typeof result?.data === "string") {
-                setScanned(true);
-                handleQRScanWithValidation(result.data, router, unresolvedAlarms);
-              }
-            }}
-        />
-        <View style={styles.viewfinder} />
-      </View>
-
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.bottomButton}>
-          <Text style={styles.buttonText}>번호 직접입력</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.bottomButton}
-          onPress={() => setFlashlight(!flashlight)}
-        >
-          <Text style={styles.buttonText}>
-            {flashlight ? "손전등 끄기" : "손전등 켜기"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.checkboxContainer}>
-        <Switch value={false} />
-        <Text style={styles.checkboxText}>
-          QR코드 인식에 문제가 있나요?
-        </Text>
-      </View>
-
-      <TouchableOpacity style={styles.customerService}>
-        <Text style={styles.customerServiceText}>
-          불편사항이 있다면{"\n"}고객센터를 이용해주세요.
-        </Text>
-        <Text style={styles.customerServiceSubText}>
-          24시간 상담원이 대기 중이에요.
-        </Text>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#4CAF50', marginTop: 30 }]}
+        onPress={handleSubmit}
+      >
+        <Text style={styles.buttonText}> 수거 완료</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 
-export default QRScanner;
+export default CollectionCompleteScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  title: {
+    color: '#black',
+    fontSize: 20,
+    marginBottom: 20,
+    fontWeight: 'bold',
+  },
+  button: {
+    backgroundColor: '#008CBA',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  preview: {
+    width: 300,
+    height: 200,
+    marginTop: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  loadingText: {
+    color: '#black',
+    fontSize: 16,
+  },
+});

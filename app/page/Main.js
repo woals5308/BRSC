@@ -5,12 +5,12 @@ import BottomNavigation from "../components/BottomNavigation";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import NotificationTab from "./alarm";
-import { usePolyfill } from "../hook/usePolyfill"; //  알림 가져오기
+import { useAlarm } from "../context/AlarmContext"; // ✅ 전역 알람 상태 가져오기
 
 const MainPage = () => {
   const router = useRouter(); 
   const [isNotificationTabVisible, setNotificationTabVisible] = useState(false);
-  const alarms = usePolyfill(); //  알림을 여기서만 받아서 공유
+  const { alarmList } = useAlarm(); // ✅ 전역 상태 사용
 
   return (
     <View style={styles.container}>
@@ -25,10 +25,10 @@ const MainPage = () => {
             source={require('../assets/icon/alarm.png')} 
             style={styles.notificationIcon} 
           />
-          {/*  알림 개수 표시 뱃지 */}
-          {alarms.length > 0 && (
+          {/* 알림 개수 표시 뱃지 */}
+          {alarmList.length > 0 && (
             <View style={styles.badgeContainer}>
-              <Text style={styles.badgeText}>{alarms.length}</Text>
+              <Text style={styles.badgeText}>{alarmList.length}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -88,7 +88,6 @@ const MainPage = () => {
       <NotificationTab 
         visible={isNotificationTabVisible}
         onClose={() => setNotificationTabVisible(false)}
-        alarms={alarms}  //  여기서 props로 전달
       />
     </View>
   );

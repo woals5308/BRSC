@@ -5,34 +5,28 @@ import BottomNavigation from "../components/BottomNavigation";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import NotificationTab from "./alarm";
-import { useAlarm } from "../context/AlarmContext"; // ✅ 전역 알람 상태 가져오기
+import { useAlarm } from "../context/AlarmContext"; //  전역 알람 상태 가져오기
+import AlarmIcon from "../components/AlarmIcon";
 
 const MainPage = () => {
   const router = useRouter(); 
   const [isNotificationTabVisible, setNotificationTabVisible] = useState(false);
-  const { alarmList } = useAlarm(); // ✅ 전역 상태 사용
+  const { alarmList } = useAlarm(); //  전역 상태 사용
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#F4F5F6" barStyle="dark-content" />
 
-      {/* 상단 헤더 */}
-      <View style={styles.header}>
-        <Image style={styles.logo} source={require('../assets/image/mainlogo2.png')} />
-
-        <TouchableOpacity onPress={() => setNotificationTabVisible(true)} style={{ position: "relative" }}>
-          <Image 
-            source={require('../assets/icon/alarm.png')} 
-            style={styles.notificationIcon} 
-          />
-          {/* 알림 개수 표시 뱃지 */}
-          {alarmList.length > 0 && (
-            <View style={styles.badgeContainer}>
-              <Text style={styles.badgeText}>{alarmList.length}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+{/* 상단 헤더 */}
+<View style={styles.header}>
+  <Image 
+    style={styles.logo} 
+    source={require('../assets/image/mainlogo2.png')} 
+  />
+  
+  {/* 재사용 가능한 알림 아이콘 */}
+  <AlarmIcon onPress={() => setNotificationTabVisible(true)} />
+</View>
 
       {/* 사용자 카드 */}
       <View style={styles.profileCard}>

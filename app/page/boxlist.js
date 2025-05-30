@@ -6,23 +6,27 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, StatusBar } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosWebInstance from '../api/axiosweb';
 import styles from '../style/boxalarmstyles';
 import { useUnresolvedAlarms } from '../hook/useUnresolveAlarm';
 import BottomNavigation from '../components/BottomNavigation';
+import NotificationTab from './alarm';
+import AlarmIcon from '../components/AlarmIcon';
+import { useAlarm } from '../context/AlarmContext'; // ✅ 추가
 
 const BoxListPage = () => {
-  const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms(); //  fetchAlarms 추가
+  const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms();
   const [inProgressAlarms, setInProgressAlarms] = useState([]);
   const [completedMap, setCompletedMap] = useState({});
   const [finalizedMap, setFinalizedMap] = useState({});
+  const [isNotificationTabVisible, setNotificationTabVisible] = useState(false);
   const router = useRouter();
-  const {alarmId,boxId,type} = useLocalSearchParams();
+  const { alarmId, boxId, type } = useLocalSearchParams();
+  const { removeAlarmById } = useAlarm();
 
-  console.log(alarmId,boxId,type);
   useEffect(() => {
     const filtered = unresolvedAlarms.filter(alarm =>
       [
@@ -34,11 +38,17 @@ const BoxListPage = () => {
         'COLLECTION_CONFIRMED',
         'FIRE_IN_PROGRESS',
         'FIRE_CONFIRMED',
-        
       ].includes(alarm.type)
     );
-    setInProgressAlarms(filtered);
-  }, [unresolvedAlarms]);
+
+    if (alarmId) {
+      const prioritized = filtered.find(alarm => String(alarm.id) === String(alarmId));
+      const rest = filtered.filter(alarm => String(alarm.id) !== String(alarmId));
+      setInProgressAlarms(prioritized ? [prioritized, ...rest] : filtered);
+    } else {
+      setInProgressAlarms(filtered);
+    }
+  }, [unresolvedAlarms, alarmId]);
 
   useEffect(() => {
     const checkCompletion = async () => {
@@ -57,7 +67,7 @@ const BoxListPage = () => {
       case 'INSTALL_CONFIRMED': return `/employee/installEnd/${alarmId}`;
       case 'REMOVE_CONFIRMED': return `/employee/removeEnd/${alarmId}`;
       case 'COLLECTION_CONFIRMED': return `/employee/collectioneEnd/${alarmId}`;
-      case 'FIRE_CONFIRMED' : return `/employee/fireEnd/${alarmId}`;
+      case 'FIRE_CONFIRMED': return `/employee/fireEnd/${alarmId}`;
       default: return null;
     }
   };
@@ -77,8 +87,7 @@ const BoxListPage = () => {
 
       Alert.alert('최종 완료', '작업이 완료되었습니다.');
       setFinalizedMap(prev => ({ ...prev, [item.id]: true }));
-
-      //  새로고침
+      removeAlarmById(item.id);
       await fetchAlarms();
     } catch (error) {
       console.error('최종 완료 실패:', error);
@@ -96,11 +105,8 @@ const BoxListPage = () => {
   };
 
   const handleFire = (item) => {
-  router.push({ pathname: '/page/boxfire', params: { alarmId: String(item.id) } });
-};
-
-
-
+    router.push({ pathname: '/page/boxfire', params: { alarmId: String(item.id) } });
+  };
 
   const getTypeLabel = (type) => {
     switch (type) {
@@ -111,17 +117,26 @@ const BoxListPage = () => {
       case 'REMOVE_CONFIRMED': return '제거 최종 확인';
       case 'COLLECTION_CONFIRMED': return '수거 최종 확인';
       case 'FIRE_IN_PROGRESS': return '화재 처리 중';
-      case 'FIRE_COMPLETED': return '화재 처리 완료';
-      case 'FIRE_CONFIRMED' : return '화재 최종 완료';
+      case 'FIRE_CONFIRMED': return '화재 최종 완료';
       default: return '알 수 없는 요청';
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.sectionHeader}>요청된 수거함</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>요청된 수거함</Text>
+        <View style={styles.notificationWrapper}>
+          <AlarmIcon onPress={() => setNotificationTabVisible(true)} />
+        </View>
+      </View>
 
+      <NotificationTab
+        visible={isNotificationTabVisible}
+        onClose={() => setNotificationTabVisible(false)}
+      />
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {inProgressAlarms.length === 0 && (
           <Text>진행 중인 알람이 없습니다.</Text>
         )}
@@ -131,7 +146,6 @@ const BoxListPage = () => {
             <Text style={styles.itemTitle}>박스 ID: {item.boxId}</Text>
             <Text style={styles.itemSubTitle}>요청 타입: {getTypeLabel(item.type)}</Text>
 
-            {/* 사진 및 위치 전송 버튼 */}
             {(item.type === 'INSTALL_IN_PROGRESS' || item.type === 'REMOVE_IN_PROGRESS') && (
               <TouchableOpacity
                 style={styles.acceptButton}
@@ -141,7 +155,6 @@ const BoxListPage = () => {
               </TouchableOpacity>
             )}
 
-            {/* QR 스캔 버튼 */}
             {item.type === 'COLLECTION_IN_PROGRESS' && (
               <TouchableOpacity
                 style={styles.acceptButton}
@@ -151,17 +164,15 @@ const BoxListPage = () => {
               </TouchableOpacity>
             )}
 
-              {/* 화재 처리하기 버튼 */}
-              {item.type === 'FIRE_IN_PROGRESS' && (
+            {item.type === 'FIRE_IN_PROGRESS' && (
               <TouchableOpacity
                 style={styles.acceptButton}
-                    onPress={() => handleFire(item)}
-              > 
+                onPress={() => handleFire(item)}
+              >
                 <Text style={styles.acceptText}>화재 처리하기</Text>
               </TouchableOpacity>
-            )}            
+            )}
 
-            {/* 최종 완료 버튼 */}
             {item.type.endsWith('_CONFIRMED') && (
               <TouchableOpacity
                 style={[
@@ -179,7 +190,8 @@ const BoxListPage = () => {
           </View>
         ))}
       </ScrollView>
-      <BottomNavigation/>
+
+      <BottomNavigation />
     </SafeAreaView>
   );
 };

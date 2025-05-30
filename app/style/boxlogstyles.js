@@ -57,7 +57,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
   },
+header: {
+  justifyContent: 'center',
+  alignItems: 'center',
+  paddingVertical: 16,
+  position: 'relative',
+  backgroundColor: "#F4F5F6",
+},
 
+title: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  textAlign: 'center',
+  color: '#333',
+},
+
+notificationWrapper: {
+  position: 'absolute',
+  right: 16,
+  top: 16,
+},
 
 
 

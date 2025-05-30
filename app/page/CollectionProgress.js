@@ -39,50 +39,54 @@ const CollectionCompleteScreen = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!image) {
-      Alert.alert('오류', '사진을 먼저 촬영해주세요.');
-      return;
-    }
+const handleSubmit = async () => {
+  if (!image) {
+    Alert.alert('오류', '사진을 먼저 촬영해주세요.');
+    return;
+  }
 
-    if (!alarm || !alarm.id || !alarm.boxId) {
-      Alert.alert('오류', '알람 정보를 불러오지 못했습니다.');
-      return;
-    }
+  if (!alarm || !alarm.id || !alarm.boxId) {
+    Alert.alert('오류', '알람 정보를 불러오지 못했습니다.');
+    return;
+  }
 
-    try {
-      const token = await AsyncStorage.getItem('usertoken');
+  try {
+    const token = await AsyncStorage.getItem('usertoken');
 
-      const formData = new FormData();
-      formData.append('file', {
-        uri: image.uri,
-        type: 'image/jpeg',
-        name: 'collection.jpg',
-      });
+    const formData = new FormData();
+    formData.append('file', {
+      uri: image.uri,
+      type: 'image/jpeg',
+      name: 'collection.jpg',
+    });
 
-      const res = await axiosWebInstance.patch(
-        `/employee/collectionCompleted/${alarmId}`,
-        formData,
-        {
-          headers: {
-            access: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+    const res = await axiosWebInstance.patch(
+      `/employee/collectionCompleted/${alarmId}`,
+      formData,
+      {
+        headers: {
+          access: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
 
-      console.log(" 수거 완료 응답:", res?.data ?? res);
+    console.log("✅ 수거 완료 응답:", res?.data ?? res);
 
-      Alert.alert('성공', '수거 완료 사진이 전송되었습니다.');
-      router.push('/page/boxlist');
-    } catch (error) {
-      console.error(
-        '수거 완료 실패:',
-        error?.response?.data || error.message || error
-      );
-      Alert.alert('오류', '수거 완료 처리 중 문제가 발생했습니다.');
-    }
-  };
+    // ✅ 완료 상태 저장
+    await AsyncStorage.setItem(`completed-${alarmId}`, 'true');
+    console.log(`✅ 완료 상태 저장됨: completed-${alarmId}`);
+
+    Alert.alert('성공', '수거 완료 사진이 전송되었습니다.');
+    router.push('/page/boxlist');
+  } catch (error) {
+    console.error(
+      '수거 완료 실패:',
+      error?.response?.data || error.message || error
+    );
+    Alert.alert('오류', '수거 완료 처리 중 문제가 발생했습니다.');
+  }
+};
 
   if (!alarm) {
     return (

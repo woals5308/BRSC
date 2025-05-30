@@ -1,38 +1,33 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+const { width, height } = Dimensions.get("window");
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#4CAF50",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  contentWrapper: {
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 20,
+    paddingBottom: 50, // 하단 중앙 배치
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
+    color: "#fff",
     fontWeight: "bold",
-    color: "black",
-    marginBottom: 8,
+    textAlign: "center",
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 14,
-    color: "#888",
+    fontSize: 16,
+    color: "#fff",
     textAlign: "center",
     marginBottom: 30,
   },
-  characterPlaceholder: {
-    width: "80%",
-    height: 200,
-    backgroundColor: "#D3D3D3",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-  },
-  placeholderText: {
-    fontSize: 14,
-    color: "red",
-    fontWeight: "bold",
-    textAlign: "center",
+  characterImage: {
+    width: width * 0.8,
+    height: height * 0.8,
   },
 });
-export default styles;

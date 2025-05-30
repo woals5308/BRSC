@@ -50,17 +50,32 @@ const BoxListPage = () => {
     }
   }, [unresolvedAlarms, alarmId]);
 
-  useEffect(() => {
-    const checkCompletion = async () => {
-      const newMap = {};
-      for (const item of inProgressAlarms) {
-        const done = await AsyncStorage.getItem(`completed-${item.id}`);
-        if (done === 'true') newMap[item.id] = true;
+useEffect(() => {
+  const checkCompletion = async () => {
+    const newMap = {};
+
+    for (const item of inProgressAlarms) {
+      const key = `completed-${item.id}`;
+      try {
+        const done = await AsyncStorage.getItem(key);
+        console.log(` AsyncStorage 키: ${key}, 값: ${done}`);
+
+        if (done?.toLowerCase() === 'true') {
+          newMap[item.id] = true;
+        }
+      } catch (err) {
+        console.warn(` ${key} 가져오는 중 에러:`, err);
       }
-      setCompletedMap(newMap);
-    };
+    }
+
+    console.log(' 최종 completedMap:', newMap);
+    setCompletedMap(newMap);
+  };
+
+  if (inProgressAlarms.length > 0) {
     checkCompletion();
-  }, [inProgressAlarms]);
+  }
+}, [inProgressAlarms]);
 
   const getFinalEndpoint = (type, alarmId) => {
     switch (type) {

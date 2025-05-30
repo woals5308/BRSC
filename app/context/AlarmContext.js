@@ -16,10 +16,18 @@ export const AlarmProvider = ({ children }) => {
   const [alarmList, setAlarmList] = useState([]);
   const [readIds, setReadIds] = useState([]);
 
-  // 알람 수신 시 갱신
+  // 알람 수신 시 기존 알람과 병합 (덮어쓰지 않음), 확정된 알람은 제외
   useEffect(() => {
     if (alarms && Array.isArray(alarms)) {
-      setAlarmList(alarms);
+      const filtered = alarms.filter((a) => !CONFIRMED_TYPES.includes(a.type));
+      setAlarmList((prev) => {
+        const newIds = filtered.map((a) => a.id);
+        const merged = [
+          ...prev.filter((a) => !newIds.includes(a.id)),
+          ...filtered,
+        ];
+        return merged;
+      });
     }
   }, [alarms]);
 
@@ -34,7 +42,7 @@ export const AlarmProvider = ({ children }) => {
     setReadIds(allIds);
   };
 
-  // ✅ 개별 알람 제거 함수 (예: 최종확인 시)
+  // 개별 알람 제거 함수 (예: 최종확인 시)
   const removeAlarmById = (id) => {
     setAlarmList((prev) => prev.filter((alarm) => alarm.id !== id));
     setReadIds((prev) => [...prev, id]);

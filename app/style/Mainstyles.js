@@ -193,6 +193,19 @@ badgeText: {
     justifyContent: "center",
     elevation: 5, // 그림자 효과 추가
   },
+  progressBar: {
+  width: "100%",
+  height: 10,
+  backgroundColor: "#E0E0E0",
+  borderRadius: 5,
+  marginVertical: 10,
+  overflow: "hidden", //  둥글게 유지
+},
+progressFill: {
+  height: "100%",
+  backgroundColor: "green",
+  borderRadius: 5,
+},
 });
 
 export default styles;

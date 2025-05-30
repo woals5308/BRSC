@@ -5,28 +5,33 @@ import BottomNavigation from "../components/BottomNavigation";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import NotificationTab from "./alarm";
-import { useAlarm } from "../context/AlarmContext"; //  전역 알람 상태 가져오기
+import { useAlarm } from "../context/AlarmContext";
 import AlarmIcon from "../components/AlarmIcon";
+import useTotalPoint from "../hook/usePoint";
 
 const MainPage = () => {
   const router = useRouter(); 
   const [isNotificationTabVisible, setNotificationTabVisible] = useState(false);
-  const { alarmList } = useAlarm(); //  전역 상태 사용
+  const { alarmList } = useAlarm();
+  const totalPointRaw = useTotalPoint();
+
+  // 💡 totalPoint가 숫자가 아닐 경우 대비
+  const totalPoint = typeof totalPointRaw === 'number' && !isNaN(totalPointRaw)
+    ? totalPointRaw
+    : 0;
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#F4F5F6" barStyle="dark-content" />
 
-{/* 상단 헤더 */}
-<View style={styles.header}>
-  <Image 
-    style={styles.logo} 
-    source={require('../assets/image/mainlogo2.png')} 
-  />
-  
-  {/* 재사용 가능한 알림 아이콘 */}
-  <AlarmIcon onPress={() => setNotificationTabVisible(true)} />
-</View>
+      {/* 상단 헤더 */}
+      <View style={styles.header}>
+        <Image 
+          style={styles.logo} 
+          source={require('../assets/image/mainlogo2.png')} 
+        />
+        <AlarmIcon onPress={() => setNotificationTabVisible(true)} />
+      </View>
 
       {/* 사용자 카드 */}
       <View style={styles.profileCard}>
@@ -35,9 +40,16 @@ const MainPage = () => {
           걸어온 <Text style={styles.highlightText}>녹색발걸음</Text>
         </Text>
         <View style={styles.progressBar}>
-          <View style={styles.progressFill} />
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${Math.min((totalPoint / 1000) * 100, 100)}%`,
+              },
+            ]}
+          />
         </View>
-        <Text style={styles.points}>💰 150P</Text>
+        <Text style={styles.points}>💰 {totalPoint}P</Text>
       </View>
 
       {/* 지도 */}
@@ -67,7 +79,7 @@ const MainPage = () => {
             <Text style={styles.helpText}>사용자들이 자주 묻는 질문만 모았어요</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.customerService} onPress={()=>router.push('/page/ServiceCenter')}>
+        <TouchableOpacity style={styles.customerService} onPress={() => router.push('/page/ServiceCenter')}>
           <Text style={styles.customerServiceText}>
             불편사항이 있다면{"\n"}고객센터를 이용해주세요.
           </Text>

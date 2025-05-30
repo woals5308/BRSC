@@ -21,6 +21,7 @@ const TYPE_LABELS = {
   REMOVE_CONFIRMED: '제거 확정',
   COLLECTION_CONFIRMED: '수거 확정',
   FIRE_CONFIRMED: '화재 처리 확정',
+  COLLECTION_NEEDED : '수거 필요',          
 };
 
 const NotificationTab = ({ visible, onClose }) => {

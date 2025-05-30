@@ -60,7 +60,7 @@ const CollectionCompleteScreen = () => {
         name: 'collection.jpg',
       });
 
-      await axiosWebInstance.patch(
+      const res = await axiosWebInstance.patch(
         `/employee/collectionCompleted/${alarmId}`,
         formData,
         {
@@ -70,12 +70,16 @@ const CollectionCompleteScreen = () => {
           },
         }
       );
-      console.log("서버 응답 데이터임:", response.data);
+
+      console.log(" 수거 완료 응답:", res?.data ?? res);
 
       Alert.alert('성공', '수거 완료 사진이 전송되었습니다.');
       router.push('/page/boxlist');
     } catch (error) {
-      console.error('수거 완료 실패:', error);
+      console.error(
+        '수거 완료 실패:',
+        error?.response?.data || error.message || error
+      );
       Alert.alert('오류', '수거 완료 처리 중 문제가 발생했습니다.');
     }
   };
@@ -90,7 +94,7 @@ const CollectionCompleteScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}> 수거 완료 사진 전송</Text>
+      <Text style={styles.title}>수거 완료 사진 전송</Text>
 
       <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
         <Text style={styles.buttonText}>사진 촬영하기</Text>
@@ -108,7 +112,7 @@ const CollectionCompleteScreen = () => {
         style={[styles.button, { backgroundColor: '#4CAF50', marginTop: 30 }]}
         onPress={handleSubmit}
       >
-        <Text style={styles.buttonText}> 수거 완료</Text>
+        <Text style={styles.buttonText}>수거 완료</Text>
       </TouchableOpacity>
     </View>
   );
@@ -119,13 +123,13 @@ export default CollectionCompleteScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#white',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
   title: {
-    color: '#black',
+    color: 'black',
     fontSize: 20,
     marginBottom: 20,
     fontWeight: 'bold',
@@ -150,7 +154,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   loadingText: {
-    color: '#black',
+    color: 'black',
     fontSize: 16,
   },
 });

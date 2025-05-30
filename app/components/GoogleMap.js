@@ -19,7 +19,6 @@ const getBoxIcon = (box) => {
     box.fireStatus3 === 'FIRE';
 
   const volumes = [box.volume1, box.volume2, box.volume3];
-
   const hasFull = volumes.some(v => v >= 81);
   const hasWarning = volumes.some(v => v >= 51);
 
@@ -27,9 +26,7 @@ const getBoxIcon = (box) => {
     return isFire ? icons.boxFire : null;
   }
 
-  if (box.usageStatus === 'USED') {
-    return null;
-  }
+  if (box.usageStatus === 'USED') return null;
 
   if (box.usageStatus === 'AVAILABLE') {
     if (isFire) return icons.boxFire;
@@ -40,7 +37,6 @@ const getBoxIcon = (box) => {
 
   return null;
 };
-
 
 const getPercentage = (usedVolume, maxVolume = 100) =>
   Math.round((usedVolume / maxVolume) * 100);
@@ -58,12 +54,10 @@ const Map = () => {
   const imageUri = useSecuredImage(`/boxImage/${selectedPoint?.id}`);
   const { handleSearch } = useSearchBox(mapRef);
 
-  //  3초마다 수거함 정보 갱신
   useEffect(() => {
     const interval = setInterval(() => {
       fetchCollectionData();
     }, 3000);
-
     return () => clearInterval(interval);
   }, [fetchCollectionData]);
 
@@ -108,28 +102,19 @@ const Map = () => {
               showsUserLocation
             >
               <Marker
-                coordinate={{
-                  latitude: currentLocation.latitude,
-                  longitude: currentLocation.longitude,
-                }}
+                coordinate={currentLocation}
                 title="내 위치"
                 opacity={0}
                 onPress={handleUserLocationPress}
               />
-
-              {collectionPoints
-                .filter((box) => getBoxIcon(box))
-                .map((point) => (
-                  <Marker
-                    key={`${point.id}-${point.fireStatus1}-${point.volume1}-${point.volume2}-${point.volume3}`}
-                    coordinate={{
-                      latitude: point.latitude,
-                      longitude: point.longitude,
-                    }}
-                    title={point.name}
-                    onPress={() => handleMarkerPress(point)}
-                    image={getBoxIcon(point)}
-                  />
+              {collectionPoints.filter(getBoxIcon).map((point) => (
+                <Marker
+                  key={`${point.id}-${point.fireStatus1}-${point.volume1}-${point.volume2}-${point.volume3}`}
+                  coordinate={{ latitude: point.latitude, longitude: point.longitude }}
+                  title={point.name}
+                  onPress={() => handleMarkerPress(point)}
+                  image={getBoxIcon(point)}
+                />
               ))}
             </MapView>
           )}
@@ -138,7 +123,7 @@ const Map = () => {
         {bottomSheetVisible && (
           <View style={styles.bottomSheet}>
             <View style={styles.dragIndicator} />
-            <TouchableOpacity onPress={() => router.push("/page/usedetail")}>
+            <TouchableOpacity onPress={() => router.push("/page/usedetail")}> 
               <View style={styles.infoBox}>
                 <Text style={styles.modalTitle}>수거함 이용방법</Text>
                 <Text style={styles.modalInfo}>배터리가 알려주는 안전한 배터리 이용수칙!</Text>
@@ -155,27 +140,19 @@ const Map = () => {
                   <View style={styles.infoBox}>
                     <Text style={styles.modalTitle}>{selectedPoint.name}</Text>
 
-                    {selectedPoint.usageStatus === 'BLOCKED' &&
-                    selectedPoint.fireStatus1 !== 'FIRE' &&
-                    selectedPoint.fireStatus2 !== 'FIRE' &&
-                    selectedPoint.fireStatus3 !== 'FIRE' ? (
-                      <Text style={[styles.modalInfo, { color: 'red', fontWeight: 'bold', marginTop: 10 }]}>
-                        ⚠️ 사용 금지 상태입니다
-                      </Text>
+                    {selectedPoint.usageStatus === 'BLOCKED' && !['FIRE'].includes(selectedPoint.fireStatus1) && !['FIRE'].includes(selectedPoint.fireStatus2) && !['FIRE'].includes(selectedPoint.fireStatus3) ? (
+                      <Text style={[styles.modalInfo, { color: 'red', fontWeight: 'bold', marginTop: 10 }]}>⚠️ 사용 금지 상태입니다</Text>
                     ) : (
-                      <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                      <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center' }}>
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.modalInfo}>수거함 사용률 요약:</Text>
+                          <Text style={styles.modalInfo}>(수거함 사용률 요약)</Text>
                           {[0, 1, 2].map((i) => {
                             const volume = selectedPoint[`volume${i + 1}`];
-                            const percent = getPercentage(volume, 100);
+                            const percent = getPercentage(volume);
                             return (
                               <Text
                                 key={i}
-                                style={[
-                                  styles.modalInfo,
-                                  percent >= 80 && { color: 'red', fontWeight: 'bold' },
-                                ]}
+                                style={[styles.modalInfo, percent >= 80 && { color: 'red', fontWeight: 'bold' }]}
                               >
                                 {binNames[i]}: {percent}%
                               </Text>
@@ -183,22 +160,23 @@ const Map = () => {
                           })}
                         </View>
 
-                        {imageUri ? (
-                          <Image
-                            source={{ uri: imageUri }}
-                            style={{
-                              width: 100,
-                              height: 100,
-                              borderRadius: 10,
-                              borderWidth: 1,
-                              borderColor: '#ccc',
-                              marginLeft: 10,
-                              alignSelf: 'center',
-                            }}
-                          />
-                        ) : (
-                          <Text style={{ marginLeft: 10, color: '#aaa' }}>이미지를 불러오는 중...</Text>
-                        )}
+                        <View style={{ width: 110, height: 130, marginLeft: 10 }}>
+                          {imageUri ? (
+                            <Image
+                              source={{ uri: imageUri }}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: 10,
+                                borderWidth: 1,
+                                borderColor: '#ccc'
+                              }}
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <Text style={{ color: '#aaa', fontSize: 12, textAlign: 'center' }}>이미지를 불러오는 중...</Text>
+                          )}
+                        </View>
                       </View>
                     )}
                   </View>

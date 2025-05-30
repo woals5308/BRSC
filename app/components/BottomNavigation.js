@@ -15,11 +15,11 @@ export default function BottomNavigation() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.navItemLeft} onPress={()=>router.push('/page/boxalarm')}>
-        <FontAwesome5 name="shopping-bag" size={20} color="gray" />
+        <FontAwesome5 name="bell" size={20} color="gray" />
         <Text style={styles.navText}>알람</Text>
       </TouchableOpacity>
 
-      {/* ✅ QR 스캔 버튼 (가운데) */}
+      {/*  QR 스캔 버튼 (가운데) */}
       <TouchableOpacity onPress={()=>router.push('/page/boxlist')}>
         <Image style={styles.scanButton} source={require('../assets/image/qr.png')} />
       </TouchableOpacity>

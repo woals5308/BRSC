@@ -16,6 +16,9 @@ import styles from '../style/boxalarmstyles';
 import BottomNavigation from '../components/BottomNavigation';
 import AlarmIcon from '../components/AlarmIcon';
 import NotificationTab from './alarm'; // 경로 맞춰주세요
+import useBackHandler from '../hook/usebackHandler';
+
+
 
 const TYPE_LABELS = {
   INSTALL_REQUEST: '설치 요청',
@@ -26,6 +29,9 @@ const TYPE_LABELS = {
 };
 
 const AlarmPage = () => {
+  useBackHandler(() => {
+  return true; // true를 반환하면 뒤로 가기 막힘
+});
   const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms();
   const [acceptedIds, setAcceptedIds] = useState([]);
   const [isNotificationTabVisible, setNotificationTabVisible] = useState(false);

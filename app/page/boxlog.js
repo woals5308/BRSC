@@ -9,7 +9,7 @@ import {
   TouchableWithoutFeedback,
   Image,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+
 import { getMyBoxLogs } from "../api/myBoxLogApi";
 import { FireLog } from "../api/firelogApi";
 import BottomNavigation from "../components/BottomNavigation";
@@ -18,6 +18,8 @@ import axiosInstance from "../api/axiosInstance";
 import { Buffer } from "buffer";
 import AlarmIcon from "../components/AlarmIcon";
 import NotificationTab from "./alarm";
+import useBackHandler from "../hook/usebackHandler";
+
 
 const nameMap = {
   battery: "건전지",
@@ -40,6 +42,13 @@ const BoxLogPage = () => {
 
   const years = Array.from({ length: 10 }, (_, i) => 2020 + i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+
+    useBackHandler(() => {
+  return true; // true를 반환하면 뒤로 가기 막힘
+});
+
+
 
   useEffect(() => {
     const fetchLogs = async () => {

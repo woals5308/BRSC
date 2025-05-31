@@ -14,6 +14,7 @@ import BottomNavigation from '../components/BottomNavigation';
 import AlarmIcon from '../components/AlarmIcon';
 import NotificationTab from './alarm'; // 경로에 맞게 조정
 import styles from '../style/myInfostyles';
+import useBackHandler from '../hook/usebackHandler';
 
 const MyInfoPage = () => {
   const [userInfo, setUserInfo] = useState(null);
@@ -27,6 +28,11 @@ const MyInfoPage = () => {
     };
     loadUserInfo();
   }, []);
+
+    useBackHandler(() => {
+  return true; // true를 반환하면 뒤로 가기 막힘
+});
+
 
   return (
     <SafeAreaView style={styles.container}>

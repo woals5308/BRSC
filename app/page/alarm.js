@@ -70,28 +70,33 @@ const NotificationTab = ({ visible, onClose }) => {
   };
 
   const handleAlarmPress = (alarm) => {
-    onClose(); // 탭 닫기
+  onClose(); // 탭 닫기
 
-    if (alarm.type.endsWith('_CONFIRMED')) {
-      router.push({
-        pathname: '/page/boxlist',
-        params: {
-          alarmId: String(alarm.id),
-          boxId: String(alarm.boxId),
-          type: alarm.type,
-        },
-      });
-    } else {
-      router.push({
-        pathname: '/page/boxalarm',
-        params: {
-          alarmId: String(alarm.id),
-          boxId: String(alarm.boxId),
-          type: alarm.type,
-        },
-      });
-    }
-  };
+  // CONFIRMED 또는 IN_PROGRESS 타입이면 boxlist로 이동
+  if (
+    alarm.type.endsWith('_CONFIRMED') ||
+    alarm.type.endsWith('_IN_PROGRESS')
+  ) {
+    router.push({
+      pathname: '/page/boxlist',
+      params: {
+        alarmId: String(alarm.id),
+        boxId: String(alarm.boxId),
+        type: alarm.type,
+      },
+    });
+  } else {
+    // 나머지 REQUEST/NEEDED/RECOMMENDED/FIRE 등은 알람 페이지
+    router.push({
+      pathname: '/page/boxalarm',
+      params: {
+        alarmId: String(alarm.id),
+        boxId: String(alarm.boxId),
+        type: alarm.type,
+      },
+    });
+  }
+};
 
   return (
     <Modal transparent visible={visible} onRequestClose={onClose}>

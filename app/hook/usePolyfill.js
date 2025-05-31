@@ -30,7 +30,7 @@ export const connectSSE = async () => {
   }
 
   console.log(" [SSE] 연결 시도 중...");
-  const sse = new EventSourcePolyfill("http://10.20.38.80:8080/SSEsubscribe", {
+  const sse = new EventSourcePolyfill("http://192.168.0.51:8080/SSEsubscribe", {
     headers: {
       access: `Bearer ${token}`,
     },

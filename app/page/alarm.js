@@ -35,7 +35,7 @@ const TYPE_LABELS = {
 };
 
 const NotificationTab = ({ visible, onClose }) => {
-  const { alarmList, markAllAsRead } = useAlarm();
+  const { alarmList, unresolvedAlarms, markAllAsRead } = useAlarm();
   const router = useRouter();
   const translateX = useRef(new Animated.Value(300)).current;
   const hasOpened = useRef(false);
@@ -64,7 +64,7 @@ const NotificationTab = ({ visible, onClose }) => {
   };
 
   const handleAlarmPress = (alarm) => {
-    onClose(); // 알람 탭 닫기
+    onClose();
 
     InteractionManager.runAfterInteractions(() => {
       const isConfirmedOrInProgress =
@@ -83,6 +83,13 @@ const NotificationTab = ({ visible, onClose }) => {
     });
   };
 
+  // 실시간 + 미해결 알람 병합 (중복 제거)
+  const combinedAlarmsMap = new Map();
+  [...(alarmList || []), ...(unresolvedAlarms || [])].forEach((alarm) => {
+    combinedAlarmsMap.set(alarm.id, alarm);
+  });
+  const combinedAlarms = Array.from(combinedAlarmsMap.values());
+
   return (
     <Modal transparent visible={visible} onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={handleOutsidePress}>
@@ -93,10 +100,10 @@ const NotificationTab = ({ visible, onClose }) => {
             </View>
 
             <ScrollView style={styles.notificationContent}>
-              {alarmList && alarmList.length > 0 ? (
-                alarmList.map((alarm) => (
+              {combinedAlarms.length > 0 ? (
+                combinedAlarms.map((alarm) => (
                   <TouchableOpacity
-                    key={alarm.id} // ✅ ID 기반 키로 변경
+                    key={alarm.id}
                     onPress={() => handleAlarmPress(alarm)}
                     style={styles.messageBox}
                   >

@@ -20,7 +20,6 @@ const CollectionCompleteScreen = () => {
   const [alarm, setAlarm] = useState(null);
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [point, setPoint] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -75,13 +74,15 @@ const CollectionCompleteScreen = () => {
         }
       );
 
-      console.log(" 수거 완료 응답:", res?.data ?? res);
+      console.log("\uD83D\uDCE6 수거 완료 응답:", res?.data ?? res);
 
       await AsyncStorage.setItem(`completed-${alarmId}`, 'true');
-      const returnedPoint = res?.data;
 
-      setPoint(returnedPoint); // 포인트 UI에 표시
-      setTimeout(() => router.push('/page/boxlist'), 6000); // 6초 후 이동
+      const returnedPoint = res?.data;
+      router.push({
+        pathname: '/page/valuereturn',
+        params: { point: String(returnedPoint) },
+      });
     } catch (error) {
       console.error(
         '수거 완료 실패:',
@@ -105,37 +106,27 @@ const CollectionCompleteScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>수거 완료 사진 전송</Text>
 
-      {point !== null ? (
-        <>
-          <Text style={styles.pointText}>{point}원 적립되었습니다!</Text>
-          <ActivityIndicator size="large" color="#0A9A5A" style={{ marginTop: 20 }} />
-          <Text style={{ marginTop: 10, color: '#555' }}>잠시 후 목록으로 이동합니다...</Text>
-        </>
-      ) : (
-        <>
-          <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
-            <Text style={styles.buttonText}>사진 촬영하기</Text>
-          </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
+        <Text style={styles.buttonText}>사진 촬영하기</Text>
+      </TouchableOpacity>
 
-          {image && (
-            <Image
-              source={{ uri: image.uri }}
-              style={styles.preview}
-              resizeMode="cover"
-            />
-          )}
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#4CAF50', marginTop: 30 }]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>수거 완료</Text>
-          </TouchableOpacity>
-
-          {loading && <ActivityIndicator size="small" color="#000" style={{ marginTop: 10 }} />}
-        </>
+      {image && (
+        <Image
+          source={{ uri: image.uri }}
+          style={styles.preview}
+          resizeMode="cover"
+        />
       )}
+
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#4CAF50', marginTop: 30 }]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>수거 완료</Text>
+      </TouchableOpacity>
+
+      {loading && <ActivityIndicator size="small" color="#000" style={{ marginTop: 10 }} />}
     </View>
   );
 };
@@ -178,11 +169,5 @@ const styles = StyleSheet.create({
   loadingText: {
     color: 'black',
     fontSize: 16,
-  },
-  pointText: {
-    fontSize: 20,
-    color: "#0A9A5A",
-    fontWeight: "bold",
-    marginTop: 20,
   },
 });

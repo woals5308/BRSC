@@ -52,6 +52,11 @@ const styles = StyleSheet.create({
       color: "white",
       fontWeight: "bold",
     },
+    termsText: {
+  fontSize: 14,
+  color: "#333",
+  lineHeight: 22,  // 선택사항
+},
   });
 
   export default styles;

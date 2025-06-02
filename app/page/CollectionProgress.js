@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -18,6 +19,8 @@ const CollectionCompleteScreen = () => {
   const [unresolvedAlarms] = useUnresolvedAlarms();
   const [alarm, setAlarm] = useState(null);
   const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [point, setPoint] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -39,54 +42,56 @@ const CollectionCompleteScreen = () => {
     }
   };
 
-const handleSubmit = async () => {
-  if (!image) {
-    Alert.alert('오류', '사진을 먼저 촬영해주세요.');
-    return;
-  }
+  const handleSubmit = async () => {
+    if (!image) {
+      Alert.alert('오류', '사진을 먼저 촬영해주세요.');
+      return;
+    }
 
-  if (!alarm || !alarm.id || !alarm.boxId) {
-    Alert.alert('오류', '알람 정보를 불러오지 못했습니다.');
-    return;
-  }
+    if (!alarm || !alarm.id || !alarm.boxId) {
+      Alert.alert('오류', '알람 정보를 불러오지 못했습니다.');
+      return;
+    }
 
-  try {
-    const token = await AsyncStorage.getItem('usertoken');
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('usertoken');
 
-    const formData = new FormData();
-    formData.append('file', {
-      uri: image.uri,
-      type: 'image/jpeg',
-      name: 'collection.jpg',
-    });
+      const formData = new FormData();
+      formData.append('file', {
+        uri: image.uri,
+        type: 'image/jpeg',
+        name: 'collection.jpg',
+      });
 
-    const res = await axiosWebInstance.patch(
-      `/employee/collectionCompleted/${alarmId}`,
-      formData,
-      {
-        headers: {
-          access: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
+      const res = await axiosWebInstance.patch(
+        `/employee/collectionCompleted/${alarmId}`,
+        formData,
+        {
+          headers: {
+            access: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
-    console.log("✅ 수거 완료 응답:", res?.data ?? res);
+      console.log(" 수거 완료 응답:", res?.data ?? res);
 
-    // ✅ 완료 상태 저장
-    await AsyncStorage.setItem(`completed-${alarmId}`, 'true');
-    console.log(`✅ 완료 상태 저장됨: completed-${alarmId}`);
+      await AsyncStorage.setItem(`completed-${alarmId}`, 'true');
+      const returnedPoint = res?.data;
 
-    Alert.alert('성공', '수거 완료 사진이 전송되었습니다.');
-    router.push('/page/boxlist');
-  } catch (error) {
-    console.error(
-      '수거 완료 실패:',
-      error?.response?.data || error.message || error
-    );
-    Alert.alert('오류', '수거 완료 처리 중 문제가 발생했습니다.');
-  }
-};
+      setPoint(returnedPoint); // 포인트 UI에 표시
+      setTimeout(() => router.push('/page/boxlist'), 3000); // 3초 후 이동
+    } catch (error) {
+      console.error(
+        '수거 완료 실패:',
+        error?.response?.data || error.message || error
+      );
+      Alert.alert('오류', '수거 완료 처리 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!alarm) {
     return (
@@ -100,24 +105,37 @@ const handleSubmit = async () => {
     <View style={styles.container}>
       <Text style={styles.title}>수거 완료 사진 전송</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
-        <Text style={styles.buttonText}>사진 촬영하기</Text>
-      </TouchableOpacity>
+      {point !== null ? (
+        <>
+          <Text style={styles.pointText}>{point}P 적립되었습니다!</Text>
+          <ActivityIndicator size="large" color="#0A9A5A" style={{ marginTop: 20 }} />
+          <Text style={{ marginTop: 10, color: '#555' }}>잠시 후 목록으로 이동합니다...</Text>
+        </>
+      ) : (
+        <>
+          <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
+            <Text style={styles.buttonText}>사진 촬영하기</Text>
+          </TouchableOpacity>
 
-      {image && (
-        <Image
-          source={{ uri: image.uri }}
-          style={styles.preview}
-          resizeMode="cover"
-        />
+          {image && (
+            <Image
+              source={{ uri: image.uri }}
+              style={styles.preview}
+              resizeMode="cover"
+            />
+          )}
+
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#4CAF50', marginTop: 30 }]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>수거 완료</Text>
+          </TouchableOpacity>
+
+          {loading && <ActivityIndicator size="small" color="#000" style={{ marginTop: 10 }} />}
+        </>
       )}
-
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#4CAF50', marginTop: 30 }]}
-        onPress={handleSubmit}
-      >
-        <Text style={styles.buttonText}>수거 완료</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -160,5 +178,11 @@ const styles = StyleSheet.create({
   loadingText: {
     color: 'black',
     fontSize: 16,
+  },
+  pointText: {
+    fontSize: 20,
+    color: "#0A9A5A",
+    fontWeight: "bold",
+    marginTop: 20,
   },
 });

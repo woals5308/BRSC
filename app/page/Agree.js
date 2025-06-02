@@ -3,11 +3,8 @@ import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
 import styles from "../style/argreestyles";
-import BottomNavigation from "../components/BottomNavigation";
 
-
-const TermsPage =()=> {
-
+const TermsPage = () => {
   const router = useRouter();
   const [isChecked, setIsChecked] = useState(false);
 
@@ -18,41 +15,49 @@ const TermsPage =()=> {
     }
     router.push("/page/LoginPage");
   };
-  
-
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>이용 약관 동의</Text>
 
-      {/* 약관 내용 */}
-      <ScrollView style={styles.termsContainer}>
-        <Text style={styles.termsText}>
-          1. 본 서비스는 폐전지 수거를 위한 서비스입니다.{"\n"}
-          2. 사용자는 본 서비스를 올바르게 이용해야 합니다.{"\n"}
-          3. 개인정보 보호 정책을 준수해야 합니다.{"\n"}
-          4. 기타 이용 약관 내용이 여기에 추가됩니다.{"\n"}
-          5. 기{"\n"}
-          6. 디{"\n"}
-          7. 라{"\n"}
-          8. 마{"\n"}
-          9. 디{"\n"}
-        </Text>
-      </ScrollView>
+<ScrollView style={styles.termsContainer}>
+  <Text style={styles.termsText}>
+    ● <Text style={{ fontWeight: "bold" }}>서비스 목적</Text>{"\n"}
+    본 앱은 배터리 수거자를 위한 전용 서비스입니다.{"\n\n"}
 
-      {/* 약관 동의 체크박스 */}
+    ● <Text style={{ fontWeight: "bold" }}>수거자의 역할</Text>{"\n"}
+    수거자는 앱을 통해 수거 요청을 확인하고, QR코드로 박스를 개폐하여 수거 및 설치 작업을 수행합니다.{"\n\n"}
+
+    ● <Text style={{ fontWeight: "bold" }}>안전 준수</Text>{"\n"}
+    모든 작업은 지정된 절차에 따라 안전하게 수행되어야 합니다.{"\n\n"}
+
+    ● <Text style={{ fontWeight: "bold" }}>정보 수집</Text>{"\n"}
+    수거자의 위치, 작업 기록 등의 데이터는 서비스 제공을 위해 수집됩니다.{"\n\n"}
+
+    ● <Text style={{ fontWeight: "bold" }}>개인정보 보호</Text>{"\n"}
+    개인정보는 관련 법령에 따라 안전하게 보호되며, 서비스 외 목적으로는 사용되지 않습니다.{"\n\n"}
+
+    ● <Text style={{ fontWeight: "bold" }}>이용 조건</Text>{"\n"}
+    본 약관에 동의하지 않으면 서비스를 이용할 수 없습니다.
+  </Text>
+</ScrollView>
       <View style={styles.checkboxContainer}>
-        <Checkbox value={isChecked} onValueChange={setIsChecked} color={isChecked ? "#4BB179" : undefined} />
+        <Checkbox
+          value={isChecked}
+          onValueChange={setIsChecked}
+          color={isChecked ? "#4BB179" : undefined}
+        />
         <Text style={styles.checkboxLabel}>위 약관에 동의합니다.</Text>
       </View>
 
-      {/* 다음 버튼 */}
-      <TouchableOpacity style={[styles.nextButton, !isChecked && styles.disabledButton]} onPress={handleNext}>
+      <TouchableOpacity
+        style={[styles.nextButton, !isChecked && styles.disabledButton]}
+        onPress={handleNext}
+      >
         <Text style={styles.buttonText}>다음</Text>
       </TouchableOpacity>
-      {/* <BottomNavigation /> */}
     </View>
   );
-}
+};
 
 export default TermsPage;

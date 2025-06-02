@@ -77,9 +77,28 @@ notificationWrapper: {
   right: 16,
   top: 16,
 },
+dateOption: {
+  fontSize: 16,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  paddingVertical: 8,
+  paddingHorizontal: 16,
+  borderRadius: 12,
+  backgroundColor: "#fff",
+  marginHorizontal: 4,
+  textAlign: "center",
+},
 
-
-
+optionText: {
+  fontSize: 16,
+  paddingVertical: 4,
+  color: '#333',
+  textAlign: 'center',
+},
+selectedText: {
+  fontWeight: 'bold',
+  color: '#4CAF50',
+},
 
 
 

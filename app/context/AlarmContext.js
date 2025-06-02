@@ -16,27 +16,28 @@ export const AlarmProvider = ({ children }) => {
   const [readIds, setReadIds] = useState([]);
   const [removedIds, setRemovedIds] = useState([]); // ✅ 최종 완료된 알람 추적
 
+  // ✅ 실시간 알람 업데이트 로직 (불변성 유지 + 최신 내용 반영)
   useEffect(() => {
     if (alarms && Array.isArray(alarms)) {
       setAlarmList((prev) => {
-        const updated = [...prev];
+        const updatedMap = new Map();
 
-        for (const newAlarm of alarms) {
-          // ✅ 이미 제거된 알람은 무시
-          if (removedIds.includes(newAlarm.id)) continue;
+        // 기존 알람들을 Map에 추가
+        prev.forEach((alarm) => {
+          updatedMap.set(alarm.id, alarm);
+        });
 
-          const idx = updated.findIndex((a) => a.id === newAlarm.id);
-          if (idx !== -1) {
-            updated[idx] = newAlarm;
-          } else {
-            updated.push(newAlarm);
+        // 새로운 알람으로 최신 상태 갱신
+        alarms.forEach((newAlarm) => {
+          if (!removedIds.includes(newAlarm.id)) {
+            updatedMap.set(newAlarm.id, newAlarm); // 같은 id면 덮어쓰기
           }
-        }
+        });
 
-        return updated;
+        return Array.from(updatedMap.values());
       });
     }
-  }, [alarms, removedIds]); // ✅ removedIds 의존성 추가
+  }, [alarms, removedIds]);
 
   const unreadCount = alarmList.filter(
     (alarm) => !readIds.includes(alarm.id)
@@ -50,7 +51,7 @@ export const AlarmProvider = ({ children }) => {
   const removeAlarmById = (id) => {
     setAlarmList((prev) => prev.filter((alarm) => alarm.id !== id));
     setReadIds((prev) => [...prev, id]);
-    setRemovedIds((prev) => [...prev, id]); // ✅ 제거된 알람 id 기록
+    setRemovedIds((prev) => [...prev, id]);
   };
 
   return (

@@ -58,7 +58,7 @@ axiosInstance.interceptors.response.use(
 
         if (!refreshToken) throw new Error("refresh token 없음");
 
-        const res = await axios.post("http://10.20.39.50:8080/reissue", null, {
+        const res = await axios.post("http://192.168.0.210:8081/reissue", null, {
           headers: {
             refresh: `Bearer ${refreshToken}`,
           },

@@ -1,35 +1,33 @@
 import React from "react";
-import { View, Text, TouchableOpacity,Image } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import styles from "../style/bottomstyles"; // 스타일 불러오기
+import styles from "../style/bottomstyles";
 import { router } from "expo-router";
-
 
 export default function BottomNavigation() {
   return (
     <View style={styles.navbar}>
-      {/* 왼쪽 아이콘 (홈, 쇼핑) */}
-      <TouchableOpacity style={styles.navItemLeft} onPress={()=>router.push('/page/Main')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/page/Main')}>
         <FontAwesome5 name="home" size={20} color="gray" />
         <Text style={styles.navText}>홈</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.navItemLeft} onPress={()=>router.push('/page/boxalarm')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/page/boxalarm')}>
         <FontAwesome5 name="bell" size={20} color="gray" />
         <Text style={styles.navText}>알람</Text>
       </TouchableOpacity>
 
-      {/*  QR 스캔 버튼 (가운데) */}
-      <TouchableOpacity onPress={()=>router.push('/page/boxlist')}>
-        <Image style={styles.scanButton} source={require('../assets/image/qr.png')} />
+      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/page/boxlist')}>
+        <FontAwesome5 name="list" size={20} color="gray" />
+        <Text style={styles.navText}>알람리스트</Text>
       </TouchableOpacity>
 
-      {/* 오른쪽 아이콘 (이용내역, 내 정보) */}
-      <TouchableOpacity style={styles.navItemRight} onPress={()=>router.push('/page/boxlog')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/page/boxlog')}>
         <MaterialCommunityIcons name="file-document-outline" size={24} color="gray" />
         <Text style={styles.navText}>이용내역</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItemRight} onPress={()=>router.push('/page/MyInfo')}>
+
+      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/page/MyInfo')}>
         <FontAwesome5 name="user" size={20} color="gray" />
         <Text style={styles.navText}>내 정보</Text>
       </TouchableOpacity>

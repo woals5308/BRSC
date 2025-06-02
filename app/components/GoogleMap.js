@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, Modal,
   Pressable, KeyboardAvoidingView, Platform, Image
@@ -7,6 +7,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import useFetchLocationAndData from "../hook/userFetchLocationAndData";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { icons } from "../assets/icon/icons";
 import styles from "../style/mapstyles";
 import { useSearchBox } from "../hook/useSearchBox";
@@ -54,12 +55,20 @@ const Map = () => {
   const imageUri = useSecuredImage(`/boxImage/${selectedPoint?.id}`);
   const { handleSearch } = useSearchBox(mapRef);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchCollectionData();
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [fetchCollectionData]);
+  useFocusEffect(
+    useCallback(() => {
+      const interval = setInterval(() => {
+        fetchCollectionData();
+      }, 3000);
+
+      return () => {
+        clearInterval(interval);
+        setSelectedPoint(null);
+        setModalVisible(false);
+        setBottomSheetVisible(false);
+      };
+    }, [fetchCollectionData])
+  );
 
   const handleMarkerPress = (point) => {
     setSelectedPoint(point);
@@ -80,7 +89,7 @@ const Map = () => {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={styles.container}>
         <StatusBar translucent backgroundColor="transparent" style="light" />
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} />
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back('/page/Main')} />
 
         <View style={styles.searchBar}>
           <TextInput
@@ -123,7 +132,7 @@ const Map = () => {
         {bottomSheetVisible && (
           <View style={styles.bottomSheet}>
             <View style={styles.dragIndicator} />
-            <TouchableOpacity onPress={() => router.push("/page/usedetail")}> 
+            <TouchableOpacity onPress={() => router.push("/page/usedetail")}>
               <View style={styles.infoBox}>
                 <Text style={styles.modalTitle}>수거함 이용방법</Text>
                 <Text style={styles.modalInfo}>배터리가 알려주는 안전한 배터리 이용수칙!</Text>
@@ -140,8 +149,13 @@ const Map = () => {
                   <View style={styles.infoBox}>
                     <Text style={styles.modalTitle}>{selectedPoint.name}</Text>
 
-                    {selectedPoint.usageStatus === 'BLOCKED' && !['FIRE'].includes(selectedPoint.fireStatus1) && !['FIRE'].includes(selectedPoint.fireStatus2) && !['FIRE'].includes(selectedPoint.fireStatus3) ? (
-                      <Text style={[styles.modalInfo, { color: 'red', fontWeight: 'bold', marginTop: 10 }]}>⚠️ 사용 금지 상태입니다</Text>
+                    {selectedPoint.usageStatus === 'BLOCKED' &&
+                    !['FIRE'].includes(selectedPoint.fireStatus1) &&
+                    !['FIRE'].includes(selectedPoint.fireStatus2) &&
+                    !['FIRE'].includes(selectedPoint.fireStatus3) ? (
+                      <Text style={[styles.modalInfo, { color: 'red', fontWeight: 'bold', marginTop: 10 }]}>
+                        ⚠️ 사용 금지 상태입니다
+                      </Text>
                     ) : (
                       <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center' }}>
                         <View style={{ flex: 1 }}>
@@ -174,7 +188,9 @@ const Map = () => {
                               resizeMode="cover"
                             />
                           ) : (
-                            <Text style={{ color: '#aaa', fontSize: 12, textAlign: 'center' }}>이미지를 불러오는 중...</Text>
+                            <Text style={{ color: '#aaa', fontSize: 12, textAlign: 'center' }}>
+                              이미지를 불러오는 중...
+                            </Text>
                           )}
                         </View>
                       </View>

@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
 import styles from "../style/argreestyles";
+import BottomNavigation from "../components/BottomNavigation";
 
 
 const TermsPage =()=> {
@@ -49,6 +50,7 @@ const TermsPage =()=> {
       <TouchableOpacity style={[styles.nextButton, !isChecked && styles.disabledButton]} onPress={handleNext}>
         <Text style={styles.buttonText}>다음</Text>
       </TouchableOpacity>
+      {/* <BottomNavigation /> */}
     </View>
   );
 }

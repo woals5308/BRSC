@@ -94,9 +94,9 @@ const NotificationTab = ({ visible, onClose }) => {
 
             <ScrollView style={styles.notificationContent}>
               {alarmList && alarmList.length > 0 ? (
-                alarmList.map((alarm, index) => (
+                alarmList.map((alarm) => (
                   <TouchableOpacity
-                    key={index}
+                    key={alarm.id} // ✅ ID 기반 키로 변경
                     onPress={() => handleAlarmPress(alarm)}
                     style={styles.messageBox}
                   >

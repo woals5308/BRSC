@@ -56,12 +56,12 @@ export const handleQRScanWithValidation = async (data,router, alarmId, unresolve
       Alert.alert("로그인 오류", "인증 토큰이 없습니다. 다시 로그인해주세요.");
       return;
     }
-
+    console.log("여기 고1")
     const response = await axiosWebInstance.get(`/employee/boxOpen/${alarmId}/${boxId}`, {
       headers: { access: `Bearer ${token}` },
     });
-
-    if (response.data == "Success") {
+    console.log("여기 고")
+    if (response.data == "200") {
       console.log(" 박스 열기 성공:", response.data);
       router.push({
         pathname: "/page/CollectionProgress",

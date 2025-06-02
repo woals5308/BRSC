@@ -89,7 +89,7 @@ const Map = () => {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={styles.container}>
         <StatusBar translucent backgroundColor="transparent" style="light" />
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back('/page/Main')} />
+        <TouchableOpacity style={styles.backButton} onPress={() => router.push('/page/Main')} />
 
         <View style={styles.searchBar}>
           <TextInput

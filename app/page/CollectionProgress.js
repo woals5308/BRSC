@@ -107,7 +107,7 @@ const CollectionCompleteScreen = () => {
 
       {point !== null ? (
         <>
-          <Text style={styles.pointText}>{point}P 적립되었습니다!</Text>
+          <Text style={styles.pointText}>{point}원 적립되었습니다!</Text>
           <ActivityIndicator size="large" color="#0A9A5A" style={{ marginTop: 20 }} />
           <Text style={{ marginTop: 10, color: '#555' }}>잠시 후 목록으로 이동합니다...</Text>
         </>

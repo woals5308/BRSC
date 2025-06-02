@@ -81,7 +81,7 @@ const CollectionCompleteScreen = () => {
       const returnedPoint = res?.data;
 
       setPoint(returnedPoint); // 포인트 UI에 표시
-      setTimeout(() => router.push('/page/boxlist'), 3000); // 3초 후 이동
+      setTimeout(() => router.push('/page/boxlist'), 6000); // 3초 후 이동
     } catch (error) {
       console.error(
         '수거 완료 실패:',

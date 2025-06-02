@@ -29,9 +29,9 @@ const TYPE_LABELS = {
 };
 
 const AlarmPage = () => {
-  useBackHandler(() => {
-  return true; // true를 반환하면 뒤로 가기 막힘
-});
+//   useBackHandler(() => {
+//   return true; // true를 반환하면 뒤로 가기 막힘
+// });
   const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms();
   const [acceptedIds, setAcceptedIds] = useState([]);
   const [isNotificationTabVisible, setNotificationTabVisible] = useState(false);

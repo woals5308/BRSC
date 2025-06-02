@@ -31,9 +31,9 @@ const BoxListPage = () => {
 
 
 
-    useBackHandler(() => {
-  return true; // true를 반환하면 뒤로 가기 막힘
-});
+//     useBackHandler(() => {
+//   return true; // true를 반환하면 뒤로 가기 막힘
+// });
 
 
 

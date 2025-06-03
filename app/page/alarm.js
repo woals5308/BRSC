@@ -13,7 +13,6 @@ import styles from '../style/alarmstyles';
 import { useAlarm } from '../context/AlarmContext';
 import { useRouter } from 'expo-router';
 
-// 알람 타입 한글 매핑
 const TYPE_LABELS = {
   COLLECTION_NEEDED: '수거 필요',
   COLLECTION_RECOMMENDED: '수거 권장',
@@ -83,10 +82,10 @@ const NotificationTab = ({ visible, onClose }) => {
     });
   };
 
-  // 실시간 + 미해결 알람 병합 (중복 제거)
+  // ✅ 실시간 + 미해결 알람 병합 (중복 제거)
   const combinedAlarmsMap = new Map();
   [...(alarmList || []), ...(unresolvedAlarms || [])].forEach((alarm) => {
-    combinedAlarmsMap.set(alarm.id, alarm);
+    combinedAlarmsMap.set(String(alarm.id), alarm); // ← 여기 수정됨
   });
   const combinedAlarms = Array.from(combinedAlarmsMap.values());
 

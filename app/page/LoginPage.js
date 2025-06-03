@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   TextInput,
@@ -18,27 +18,36 @@ import { login } from "../api/loginApi";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context"; //  추가
 import { connectSSE } from "../hook/usePolyfill";
+import useBackHandler from "../hook/usebackHandler";
+
 
 const Login = () => {
+
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [autoLogin, setAutoLogin] = useState(false);
   const router = useRouter();
 
-  const handleNaverLogin = async () => {
-    const userInfo = await naverSignIn();
-    if (userInfo) {
-      router.push("/page/Main");
-    }
-  };
+  
+  useBackHandler();
 
-  const handleAppleLogin = async () => {
-    const credential = await appleSignIn();
-    if (credential) {
-      await SecureStore.setItemAsync("userToken", credential.identityToken);
-      router.push("/page/Main");
-    }
-  };
+
+  // const handleAppleLogin = async () => {
+  //   const credential = await appleSignIn();
+  //   if (credential) {
+  //     await SecureStore.setItemAsync("userToken", credential.identityToken);
+  //     router.push("/page/Main");
+  //   }
+  // };
+
+  // const handleNaverLogin = async () => {
+  //   const userInfo = await naverSignIn();
+  //   if (userInfo) {
+  //     router.push("/page/Main");
+  //   }
+  // };
+  
+
 
   const handleLogin = async () => {
     try {
@@ -125,7 +134,7 @@ const Login = () => {
             </View>
 
             <View style={styles.socialContainer}>
-              <TouchableOpacity style={[styles.button, styles.kakao]}>
+              {/* <TouchableOpacity style={[styles.button, styles.kakao]}>
                 <Image
                   source={require("../assets/icon/kakao.png")}
                   style={styles.icon}
@@ -153,7 +162,7 @@ const Login = () => {
                   style={styles.icon}
                 />
                 <Text style={styles.text}>네이버로 로그인하기</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity style={styles.signupButton}>
                 <Text

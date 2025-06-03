@@ -54,6 +54,13 @@ export const AlarmProvider = ({ children }) => {
     setRemovedIds((prev) => [...prev, id]);
   };
 
+  // ✅ 미해결 알람 목록: 확정된 알람 제외
+  const unresolvedAlarms = alarmList.filter(
+    (alarm) =>
+      !CONFIRMED_TYPES.includes(alarm.type) &&
+      !removedIds.includes(alarm.id)
+  );
+
   return (
     <AlarmContext.Provider
       value={{
@@ -62,6 +69,7 @@ export const AlarmProvider = ({ children }) => {
         unreadCount,
         markAllAsRead,
         removeAlarmById,
+        unresolvedAlarms, // ✅ 미해결 알람 포함
       }}
     >
       {children}

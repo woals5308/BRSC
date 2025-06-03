@@ -40,7 +40,6 @@ const BoxLogPage = () => {
   const [fireImages, setFireImages] = useState({});
   const [isNotificationTabVisible, setNotificationTabVisible] = useState(false);
 
-  // useBackHandler(() => true);
 
   useEffect(() => {
     const fetchLogs = async () => {

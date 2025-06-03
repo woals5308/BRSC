@@ -14,12 +14,12 @@ import BottomNavigation from '../components/BottomNavigation';
 import AlarmIcon from '../components/AlarmIcon';
 import NotificationTab from './alarm'; // 경로에 맞게 조정
 import styles from '../style/myInfostyles';
-import useBackHandler from '../hook/usebackHandler';
+import useTotalPoint from "../hook/usePoint";
 
 const MyInfoPage = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [isNotificationTabVisible, setNotificationTabVisible] = useState(false);
-
+   const totalPointRaw = useTotalPoint();
   useEffect(() => {
     const loadUserInfo = async () => {
       const data = await fetchMyInfo();
@@ -28,10 +28,6 @@ const MyInfoPage = () => {
     };
     loadUserInfo();
   }, []);
-
-//     useBackHandler(() => {
-//   return true; // true를 반환하면 뒤로 가기 막힘
-// });
 
 
   return (
@@ -65,16 +61,17 @@ const MyInfoPage = () => {
           </View>
         </View>
 
-        {/* 항목 목록 */}
         {[
-          { label: '개인정보' },
+          { label: '보상금' },
           { label: '공지사항' },
           { label: '고객센터' },
           { label: '약관 및 정책' },
         ].map((item, index) => (
           <View key={index} style={styles.listItem}>
             <Text>{item.label}</Text>
-            <Text style={styles.edit}></Text>
+            <Text style={styles.edit}>
+              {item.label === '보상금' ? `${totalPointRaw}P` : ''}
+            </Text>
           </View>
         ))}
 

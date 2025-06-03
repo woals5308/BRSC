@@ -16,7 +16,6 @@ import BottomNavigation from '../components/BottomNavigation';
 import NotificationTab from './alarm';
 import AlarmIcon from '../components/AlarmIcon';
 import { useAlarm } from '../context/AlarmContext'; // ✅ 추가
-import useBackHandler from '../hook/usebackHandler';
 
 const BoxListPage = () => {
   const [unresolvedAlarms, fetchAlarms] = useUnresolvedAlarms();
@@ -31,9 +30,6 @@ const BoxListPage = () => {
 
 
 
-//     useBackHandler(() => {
-//   return true; // true를 반환하면 뒤로 가기 막힘
-// });
 
 
 

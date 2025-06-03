@@ -29,7 +29,7 @@ const Login = () => {
   const router = useRouter();
 
   
-  useBackHandler();
+
 
 
   // const handleAppleLogin = async () => {
